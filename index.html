@@ -71,14 +71,23 @@ footer{flex-direction:column;flex-wrap:nowrap;justify-content:flex-start;gap:14p
 .top>div{min-width:0}
 .escudo{flex:0 0 auto;height:72px;width:auto;border-radius:8px;background:#fff;padding:3px}
 .inst{margin:.2rem 0 0;font-size:.88rem;color:var(--muted)}
+.mode{max-width:100%;overflow-x:auto}
+.pt.g{fill:var(--c3)}
+.myth{background:var(--chip);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:6px}
+.myth p{margin:0}
+.myth span{font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;font-weight:700;color:var(--bad)}
+.myth span.ok{color:var(--ok)}
+ol.steps,.tx ul{margin:0;padding-left:1.2rem;display:flex;flex-direction:column;gap:6px;max-width:62ch}
+.ev{color:var(--muted);font-size:.84rem}
+.ctl select{font:inherit;padding:.5rem .6rem;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink);grid-column:1/-1}
 /* ---- Conceptos ---- */
 :root{--glass:#6f8794;--water:#bfe0f2;--c1:#1667c9;--c2:#e07a12;--c3:#0f9d8a;--salt:#5d7684;--sand:#b08a4e;--ok:#1a7f4b;--bad:#b3372e;--fig:#eaf1f5}
 @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){--glass:#8fa7b3;--water:#27506a;--c1:#62adf7;--c2:#f0a94a;--c3:#4fd1bd;--salt:#c9d6dd;--sand:#c9a56a;--ok:#5fd39a;--bad:#ff8f85;--fig:#101a21} }
 :root[data-theme="dark"]{--glass:#8fa7b3;--water:#27506a;--c1:#62adf7;--c2:#f0a94a;--c3:#4fd1bd;--salt:#c9d6dd;--sand:#c9a56a;--ok:#5fd39a;--bad:#ff8f85;--fig:#101a21}
 .mode{display:flex;gap:4px;background:var(--chip);padding:4px;border-radius:12px;align-self:flex-start}
-.mode button{font:600 .95rem var(--body);padding:.55rem 1rem;border-radius:9px;border:0;background:transparent;color:var(--muted);cursor:pointer}
+.mode button{white-space:nowrap;font:600 .95rem var(--body);padding:.55rem .8rem;border-radius:9px;border:0;background:transparent;color:var(--muted);cursor:pointer}
 .mode button[aria-current="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.14)}
-#lab,#con{display:flex;flex-direction:column;gap:16px}
+#lab,#con,#pro{display:flex;flex-direction:column;gap:16px}
 .score{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;justify-content:space-between;font-weight:600;font-variant-numeric:tabular-nums}
 .btn{font:600 .88rem var(--body);padding:.5rem .8rem;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
 .btn:disabled{color:var(--muted);cursor:default}
@@ -144,6 +153,7 @@ footer{flex-direction:column;flex-wrap:nowrap;justify-content:flex-start;gap:14p
   <nav class="mode" id="mode" aria-label="Secciones">
     <button data-m="lab" aria-current="true">Laboratorio</button>
     <button data-m="con" aria-current="false">Conceptos</button>
+    <button data-m="pro" aria-current="false">Profundización</button>
   </nav>
 
   <div id="lab">
@@ -292,6 +302,103 @@ footer{flex-direction:column;flex-wrap:nowrap;justify-content:flex-start;gap:14p
         <div class="unit"><span class="u">ppm</span><p>ppm = <span class="frac"><span>mg de soluto</span><span>L de solución</span></span></p><p>Para soluciones muy diluidas en agua, como el cloro del agua de la llave.</p></div>
       </div>
       <div class="quiz" data-t="7"></div>
+    </article>
+  </div>
+
+  <div id="pro" hidden>
+    <article class="topic" id="p1">
+      <h2>Cómo se prepara una solución sobresaturada</h2>
+      <div class="tb">
+        <figure class="ill" id="fp1"></figure>
+        <div class="tx">
+          <p>No se llega a ella agregando más soluto. Se llega <b>cambiando la temperatura</b>. Sigue el recorrido:</p>
+          <div class="seg" id="supSteps"><button class="btn" data-i="0">1 · Fría, con exceso</button><button class="btn" data-i="1">2 · Calentar</button><button class="btn" data-i="2">3 · Enfriar en reposo</button><button class="btn" data-i="3">4 · Cristal semilla</button></div>
+          <p class="out" id="supOut" aria-live="polite"></p>
+        </div>
+      </div>
+      <ol class="steps">
+        <li>Calienta el solvente y disuelve más soluto del que admite a temperatura ambiente. En el laboratorio se usa acetato de sodio o tiosulfato de sodio.</li>
+        <li>Verifica que no quede ningún cristal. Si queda, pasa el líquido a un recipiente limpio.</li>
+        <li>Tapa y deja enfriar en reposo, sin agitar ni golpear.</li>
+        <li>Ya fría, tiene disuelto más soluto que el máximo. Un solo cristal la hace cristalizar y liberar calor.</li>
+      </ol>
+      <div class="myth"><span>Idea equivocada</span><p>«Una solución está sobresaturada cuando ya no disuelve más soluto y sobra en el fondo».</p><span class="ok">Lo correcto</span><p>Eso es una solución <b>saturada con exceso de soluto</b>: el líquido tiene justo el máximo y lo demás no entró. En una sobresaturada el líquido tiene <b>más</b> que el máximo y no hay sólido en el fondo.</p></div>
+      <div class="tw"><table>
+        <thead><tr><th></th><th>Saturada con exceso</th><th>Sobresaturada</th></tr></thead>
+        <tbody>
+          <tr><td>Soluto disuelto</td><td>Igual al máximo</td><td>Mayor que el máximo</td></tr>
+          <tr><td>Sólido en el fondo</td><td>Sí</td><td>No</td></tr>
+          <tr><td>Estabilidad</td><td>Estable</td><td>Inestable: cristaliza al perturbarla</td></tr>
+          <tr><td>Cómo se obtiene</td><td>Agregando soluto de más</td><td>Disolviendo en caliente y enfriando en reposo</td></tr>
+          <tr><td>Si agregas un cristal</td><td>Se queda en el fondo</td><td>Cristaliza todo el exceso</td></tr>
+        </tbody>
+      </table></div>
+    </article>
+
+    <article class="topic" id="p2">
+      <h2>Otras unidades de concentración</h2>
+      <div class="units">
+        <div class="unit"><span class="u">% p/p</span><p>% p/p = <span class="frac"><span>g de soluto</span><span>g de solución</span></span> × 100</p><p>Vinagre al 5 % p/p: 5 g de ácido acético en cada 100 g de vinagre.</p></div>
+        <div class="unit"><span class="u">% v/v</span><p>% v/v = <span class="frac"><span>mL de soluto</span><span>mL de solución</span></span> × 100</p><p>Alcohol antiséptico al 70 % v/v: 70 mL de etanol en cada 100 mL.</p></div>
+        <div class="unit"><span class="u">g/L</span><p>g/L = <span class="frac"><span>g de soluto</span><span>L de solución</span></span></p><p>Suero oral: 13,5 g de glucosa en cada litro.</p></div>
+        <div class="unit"><span class="u">Molalidad (m)</span><p>m = <span class="frac"><span>moles de soluto</span><span>kg de solvente</span></span></p><p>Se divide entre el solvente, no la solución. No cambia con la temperatura.</p></div>
+        <div class="unit"><span class="u">Fracción molar (X)</span><p>X = <span class="frac"><span>moles de un componente</span><span>moles totales</span></span></p><p>No tiene unidades. Las fracciones de todos los componentes suman 1.</p></div>
+        <div class="unit"><span class="u">Normalidad (N)</span><p>N = <span class="frac"><span>equivalentes de soluto</span><span>L de solución</span></span></p><p>N = M × número de H⁺, OH⁻ o cargas por unidad. H₂SO₄ 1 M es 2 N.</p></div>
+      </div>
+    </article>
+
+    <article class="topic" id="p3">
+      <h2>Cómo pasar de una unidad a otra</h2>
+      <div class="tb">
+        <figure class="ill" id="fp3"></figure>
+        <div class="tx">
+          <p>Elige una base de cálculo, por ejemplo <b>1 L de solución</b>, y averigua cuánto soluto hay en ella. Necesitas la <b>masa molar</b> para pasar de gramos a moles y la <b>densidad</b> para pasar de volumen a masa de solución.</p>
+          <p>Tu solución de la Parte 1, CuSO₄·5H₂O al 2 % p/V: 20 g/L, que son 0,080 M y 20 000 ppm.</p>
+        </div>
+      </div>
+      <div class="tb">
+        <div class="ctl">
+          <label for="uS"><span>Soluto</span><output></output><select id="uS"><option>NaCl</option><option>KCl</option><option>CuSO₄·5H₂O</option><option>NaOH</option><option>Glucosa</option></select></label>
+          <label for="uP"><span>Concentración</span><output id="uPo"></output><input type="range" id="uP" min="0.1" max="10" step="0.1" value="0.9"></label>
+          <label for="uD"><span>Densidad de la solución</span><output id="uDo"></output><input type="range" id="uD" min="1" max="1.1" step="0.01" value="1"></label>
+        </div>
+        <div class="tw"><table>
+          <caption>La densidad se mide o se consulta. En soluciones diluidas en agua es cercana a 1,00 g/mL.</caption>
+          <thead><tr><th>Unidad</th><th>Valor</th><th>Cómo se obtiene</th></tr></thead>
+          <tbody id="uOut"></tbody>
+        </table></div>
+      </div>
+    </article>
+
+    <article class="topic" id="p4">
+      <h2>Soluciones con más de un soluto</h2>
+      <div class="tb">
+        <figure class="ill" id="fp4"></figure>
+        <div class="tx">
+          <p>Casi todas las soluciones reales tienen varios solutos: el agua de mar, la gaseosa, el suero oral.</p>
+          <ul>
+            <li>Cada soluto tiene <b>su propia concentración</b>, calculada sobre el mismo volumen de solución.</li>
+            <li>Un ion que viene de dos solutos <b>se suma</b>.</li>
+            <li>Los solutos se afectan entre sí: una sal se disuelve menos si ya hay disuelto uno de sus iones (efecto del ion común).</li>
+          </ul>
+        </div>
+      </div>
+      <div class="tw"><table>
+        <caption>Suero de rehidratación oral, fórmula de la OMS, por litro. El sodio suma 75 mmol/L porque viene de dos solutos: 44 del NaCl y 30 del citrato (3 por cada unidad).</caption>
+        <thead><tr><th>Soluto</th><th>g/L</th><th>mmol/L</th><th>Aporta</th></tr></thead>
+        <tbody>
+          <tr><td>Cloruro de sodio</td><td>2,6</td><td>44</td><td>Na⁺ y Cl⁻</td></tr>
+          <tr><td>Cloruro de potasio</td><td>1,5</td><td>20</td><td>K⁺ y Cl⁻</td></tr>
+          <tr><td>Citrato trisódico dihidratado</td><td>2,9</td><td>10</td><td>3 Na⁺ y citrato</td></tr>
+          <tr><td>Glucosa</td><td>13,5</td><td>75</td><td>Glucosa (no forma iones)</td></tr>
+        </tbody>
+      </table></div>
+    </article>
+
+    <article class="topic" id="p5">
+      <h2>Reto tipo ICFES</h2>
+      <p style="margin:0">Tres preguntas de máxima dificultad, una por cada competencia de Ciencias Naturales.</p>
+      <div class="quiz" id="pq"></div>
     </article>
   </div>
 
@@ -834,6 +941,63 @@ function quiz(){score=done=0;qa('.quiz').forEach(e=>e.innerHTML='');
 q('#again').onclick=quiz;quiz();
 q('#ctabs').onclick=e=>{const b=e.target.closest('button');if(b)q('#t'+b.dataset.t).scrollIntoView({behavior:'smooth',block:'start'})};
 
+/* ---- Profundización ---- */
+const SS=[['Saturada + sólido','A temperatura ambiente no cabe todo el soluto: una parte queda en el fondo. El líquido tiene justo el máximo.',14,30,70],
+ ['Insaturada','Al calentar, la solubilidad sube y todo el soluto se disuelve.',34,0,160],
+ ['Sobresaturada','Enfriada en reposo y sin cristales, conserva disuelto más soluto que el máximo. No hay sólido en el fondo y es inestable.',34,0,70],
+ ['Saturada + sólido','Un cristal semilla o un golpe basta: el exceso cristaliza en segundos y el líquido vuelve a tener solo el máximo.',14,30,70]];
+let ss=0;
+function sup(){const s=SS[ss];
+  const g=`<path class="ax" d="M40 20V170H195"/><path class="cv c1 on" d="M40 150Q130 140 190 40"/>`+T(128,58,'Solubilidad','end')+T(118,192,'Temperatura')
+   +`<text class="st" transform="translate(22 95) rotate(-90)" text-anchor="middle">Soluto en el vaso</text><path class="ln" d="M70 105H160"/>`
+   +(ss===3?`<path class="ax" d="M70 114V138M64 130L70 138L76 130"/>`:'')+`<circle class="dot" cx="${s[4]}" cy="105" r="6"/>`
+   +V(230,30,100,140,.82,'lq w')+D(s[2],238,64,84,s[3]?72:96,5,'b')+P(s[3],280,170,74,8,'b')+T(280,192,s[0]);
+  fig('fp1',svg(360,204,g,'Esquema: curva de solubilidad con el punto de la solución y un vaso que muestra su estado.'),'Esquema: el punto por encima de la curva solo es estable si hay sólido en el fondo.');
+  q('#supOut').textContent=s[1];qa('#supSteps button').forEach((b,i)=>b.classList.toggle('on',i===ss))}
+q('#supSteps').onclick=e=>{const b=e.target.closest('button');if(b){ss=+b.dataset.i;sup()}};sup();
+
+const BX=(x,y,s)=>`<rect class="zo" x="${x}" y="${y}" width="70" height="32" rx="8"/>`+T(x+35,y+21,s);
+fig('fp3',svg(360,180,BX(10,34,'% p/p')+BX(145,34,'% p/V')+BX(280,34,'g/L')+BX(145,138,'ppm')+BX(280,138,'M')
+  +`<path class="ax" d="M84 50H141M133 44L141 50L133 56"/>`+T(112,26,'× densidad')+`<path class="ax" d="M219 50H276M268 44L276 50L268 56"/>`+T(247,26,'× 10')
+  +`<path class="ax" d="M180 70V134M174 126L180 134L186 126"/>`+T(170,106,'× 10 000','end')+`<path class="ax" d="M315 70V134M309 126L315 134L321 126"/>`+T(305,106,'÷ masa molar','end'),
+  'Mapa de conversión entre unidades de concentración.'),'Para ir en sentido contrario, haz la operación inversa.');
+const MM={'NaCl':58.44,'KCl':74.55,'CuSO₄·5H₂O':249.68,'NaOH':40,'Glucosa':180.16};
+const n3=v=>String(Number(v.toPrecision(3))).replace('.',',');
+function conv(){const k=q('#uS').value,p=+q('#uP').value,d=+q('#uD').value,gl=p*10,M=gl/MM[k];
+  q('#uPo').textContent=n2(p)+' % p/V';q('#uDo').textContent=d.toFixed(2).replace('.',',')+' g/mL';
+  q('#uOut').innerHTML=[['g/L',n3(gl),'% p/V × 10'],['ppm (mg/L)',Math.round(gl*1000).toLocaleString('es-CO'),'g/L × 1000'],['Molaridad',n3(M)+' M','g/L ÷ '+n2(MM[k])+' g/mol'],
+   ['% p/p',n3(p/d)+' %','% p/V ÷ densidad'],['Molalidad',n3(M/((d*1000-gl)/1000))+' m','moles ÷ kg de solvente']].map(r=>`<tr><td>${r[0]}</td><td><b>${r[1]}</b></td><td>${r[2]}</td></tr>`).join('')}
+['uS','uP','uD'].forEach(i=>q('#'+i).oninput=conv);conv();
+
+fig('fp4',svg(360,200,V(40,24,130,146,.84,'lq w')+D(14,50,56,110,104,3,'b',3.5)+D(9,50,56,110,104,8,'o',3.5)+D(18,50,56,110,104,12,'g',3.5)
+  +`<circle class="pt b" cx="210" cy="60" r="6"/>`+T(224,65,'Sodio y cloruro','start')+`<circle class="pt o" cx="210" cy="95" r="6"/>`+T(224,100,'Potasio y citrato','start')
+  +`<circle class="pt g" cx="210" cy="130" r="6"/>`+T(224,135,'Glucosa','start')+T(105,192,'Suero oral'),'Ilustración: un vaso con partículas de tres colores, una por cada grupo de solutos.'),
+  'Varios solutos comparten el mismo solvente.');
+
+const PQ=[
+{c:'Uso comprensivo del conocimiento científico',ev:'4.7 Establece relaciones entre conceptos fisicoquímicos simples (separación de mezclas, solubilidad, gases ideales) con distintos fenómenos naturales.',
+ q:'Para un torneo de microfútbol en Montería, el profesor prepara 2 L de bebida hidratante disolviendo en agua 5,85 g de NaCl (58,5 g/mol) y 7,45 g de KCl (74,5 g/mol). Las dos sales se separan por completo en sus iones.',
+ ask:'¿Cuáles son las concentraciones de los iones en la bebida?',
+ o:['0,05 M de Cl⁻, 0,05 M de Na⁺ y 0,05 M de K⁺','0,20 M de Cl⁻, 0,10 M de Na⁺ y 0,10 M de K⁺','0,10 M de Cl⁻, 0,05 M de Na⁺ y 0,05 M de K⁺','0,10 M de Cl⁻, 0,10 M de Na⁺ y 0,10 M de K⁺'],a:2,
+ x:'Cada sal aporta 0,10 mol. El Cl⁻ viene de las dos: 0,20 mol en 2 L son 0,10 M. El Na⁺ y el K⁺ vienen de una sola: 0,10 mol en 2 L son 0,05 M cada uno.'},
+{c:'Explicación de fenómenos',ev:'2.3 Reconoce los atributos que definen ciertos procesos fisicoquímicos simples (separación de mezclas, solubilidad, gases ideales, cambios de fase) y da razón de la manera en que ocurren.',
+ q:'Un frasco de miel de abejas, bien tapado, pasa varios meses en la alacena. Al abrirlo, parte de la miel está «azucarada»: hay cristales sólidos dentro de un líquido más claro. Al poner el frasco en baño de María, los cristales desaparecen y la miel vuelve a ser líquida.',
+ ask:'¿Cuál explicación da razón de las dos observaciones?',
+ o:['El agua se evaporó del frasco, y al calentarlo el vapor regresa al líquido','El azúcar reaccionó y formó otro sólido, que con el calor se descompone','El frío de la alacena congeló el agua, y el calor la derrite de nuevo','Tenía más azúcar disuelto que el máximo estable, y el calor eleva ese máximo'],a:3,
+ x:'La miel es una solución sobresaturada de azúcares: con el tiempo el exceso cristaliza. Al calentar aumenta la solubilidad y los cristales se disuelven otra vez. El frasco estaba tapado, así que no perdió agua.'},
+{c:'Indagación',ev:'7.3 Elabora conclusiones a partir de información o evidencias que las respalden.',
+ q:'Un grupo quiere saber si la temperatura afecta la solubilidad del nitrato de potasio (KNO₃). En cada ensayo agregan sal hasta que deja de disolverse y registran la masa disuelta. Como tenían poca agua destilada, usaron cantidades distintas.',
+ pre:'<div class="tw"><table><thead><tr><th>Ensayo</th><th>Temperatura</th><th>Agua usada</th><th>KNO₃ disuelto</th></tr></thead><tbody><tr><td>1</td><td>20 °C</td><td>100 g</td><td>32,0 g</td></tr><tr><td>2</td><td>40 °C</td><td>50 g</td><td>32,0 g</td></tr><tr><td>3</td><td>60 °C</td><td>25 g</td><td>27,5 g</td></tr></tbody></table></div>',
+ ask:'¿Qué conclusión respaldan estos datos?',
+ o:['La solubilidad casi no cambia, porque la masa disuelta fue parecida','La solubilidad aumenta con la temperatura, al comparar por 100 g de agua','La solubilidad disminuye a 60 °C, porque allí se disolvió menos masa','La solubilidad depende del agua usada, y no de la temperatura medida'],a:1,
+ x:'Las masas no se pueden comparar directamente porque el agua cambió. Por cada 100 g de agua se disolvieron 32 g, 64 g y 110 g: la solubilidad aumenta con la temperatura.'}];
+PQ.forEach((k,n)=>{const d=document.createElement('div');d.className='q';
+  d.innerHTML=`<p class="eyebrow">Pregunta ${n+1} · ${k.c}</p><p>${k.q}</p>${k.pre||''}<p><b>${k.ask}</b></p><div class="opts">${k.o.map((o,j)=>`<button data-j="${j}"><b>${'ABCD'[j]}.</b><span>${o}</span></button>`).join('')}</div><div class="fb" hidden></div>`;
+  d.querySelector('.opts').onclick=e=>{const b=e.target.closest('button');if(!b||b.disabled)return;const j=+b.dataset.j,ok=j===k.a;
+    d.querySelectorAll('.opts button').forEach((x,i)=>{x.disabled=true;if(i===k.a)x.classList.add('ok');else if(i===j)x.classList.add('bad')});
+    const fb=d.querySelector('.fb');fb.hidden=false;fb.innerHTML=`<b class="${ok?'ok':'bad'}">${ok?'✓ Correcto.':'✗ La respuesta es la '+'ABCD'[k.a]+'.'}</b> ${k.x}<br><span class="ev">Evidencia Saber 11.°: ${k.ev}</span>`};
+  q('#pq').appendChild(d)});
+
 /* visitas y sugerencias: solo en la versión publicada en GitHub */
 const LIVE=/github\.io$/.test(location.hostname);
 if(LIVE){let seen=false;try{seen=sessionStorage.getItem('v')==='1';sessionStorage.setItem('v','1')}catch(e){}
@@ -847,12 +1011,13 @@ sf.addEventListener('submit',e=>{const tot=[...q('#simg').files].reduce((a,f)=>a
   else if(tot>5*1048576){e.preventDefault();q('#snote').textContent='Las imágenes superan 5 MB en total. Reduce su tamaño o envía menos.'}});
 
 /* secciones */
-function mode(m,setHash){q('#lab').hidden=m!=='lab';q('#con').hidden=m!=='con';
+const HASH={lab:'laboratorio',con:'conceptos',pro:'profundizacion'};
+function mode(m,setHash){q('#lab').hidden=m!=='lab';q('#con').hidden=m!=='con';q('#pro').hidden=m!=='pro';
   qa('#mode button').forEach(b=>b.setAttribute('aria-current',String(b.dataset.m===m)));
-  if(m==='con'&&q('#play').getAttribute('aria-label')==='Pausar')q('#play').click();
-  if(setHash)try{location.hash=m==='con'?'conceptos':'laboratorio'}catch(e){}}
+  if(m!=='lab'&&q('#play').getAttribute('aria-label')==='Pausar')q('#play').click();
+  if(setHash)try{location.hash=HASH[m]}catch(e){}}
 q('#mode').onclick=e=>{const b=e.target.closest('button');if(b)mode(b.dataset.m,true)};
-const fromHash=()=>{mode(location.hash==='#conceptos'?'con':'lab',false);
+const fromHash=()=>{mode(location.hash==='#conceptos'?'con':location.hash==='#profundizacion'?'pro':'lab',false);
   if(location.hash==='#gracias'){q('#thanks').hidden=false;q('#thanks').scrollIntoView({block:'center'})}};
 window.addEventListener('hashchange',fromHash);fromHash();
 })();
