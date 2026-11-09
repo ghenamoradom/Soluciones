@@ -1,0 +1,808 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Práctica de soluciones animada</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap">
+<style>
+/* Layout: el escenario del laboratorio manda; a su lado (o debajo en celular) la ficha del paso. */
+:root{
+  --bg:#f1f5f7; --surface:#ffffff; --ink:#14232d; --muted:#586a75; --line:#d3dde3;
+  --accent:#1667c9; --accent-ink:#ffffff; --warm:#a85a0a; --chip:#e4edf5;
+  --display:"Space Grotesk","Inter",system-ui,sans-serif; --body:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0d151a; --surface:#162129; --ink:#e7eef2; --muted:#9bafba; --line:#2a3a45;
+  --accent:#62adf7; --accent-ink:#06131f; --warm:#f0a94a; --chip:#1d2c37; color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#0d151a; --surface:#162129; --ink:#e7eef2; --muted:#9bafba; --line:#2a3a45;
+  --accent:#62adf7; --accent-ink:#06131f; --warm:#f0a94a; --chip:#1d2c37; color-scheme:dark }
+*{box-sizing:border-box}
+body{margin:0}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.5}
+.wrap{max-width:1120px;margin:0 auto;padding-block:20px 28px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  display:flex;flex-direction:column;gap:16px}
+.eyebrow{font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600;margin:0}
+h1{font-family:var(--display);font-size:clamp(1.5rem,4.5vw,2.1rem);line-height:1.15;margin:.15rem 0 0;text-wrap:balance}
+.tabs{display:flex;gap:8px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
+.tabs button{flex:0 0 auto;font:600 .88rem var(--body);padding:.5rem .8rem;border-radius:999px;border:1px solid var(--line);
+  background:var(--surface);color:var(--muted);cursor:pointer;white-space:nowrap}
+.tabs button[aria-current="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.grid{display:grid;grid-template-columns:minmax(0,1fr);gap:16px}
+@media (min-width:920px){.grid{grid-template-columns:minmax(0,1.65fr) minmax(0,1fr);align-items:start}}
+.stagebox{display:flex;flex-direction:column;gap:10px;min-width:0}
+canvas{display:block;width:100%;max-width:100%;aspect-ratio:800/520;border-radius:12px;background:#b9c7cd}
+.transport{display:flex;align-items:center;gap:8px}
+.transport button{flex:0 0 auto;width:44px;height:44px;border-radius:10px;border:1px solid var(--line);background:var(--surface);
+  color:var(--ink);cursor:pointer;display:grid;place-items:center;font:700 .85rem var(--body)}
+.transport button.play{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);width:56px}
+.transport svg{width:18px;height:18px;fill:currentColor}
+.transport input{flex:1 1 auto;min-width:0;accent-color:var(--accent)}
+button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.panel{min-width:0;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:12px}
+.panel h2{font-family:var(--display);font-size:1.3rem;line-height:1.2;margin:0;text-wrap:balance}
+.panel p{margin:0}
+.ver{background:var(--chip);border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:2px}
+.ver span{font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;font-weight:700;color:var(--accent)}
+.tw{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:.86rem;font-variant-numeric:tabular-nums}
+th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:.72rem;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);font-weight:600}
+caption{caption-side:bottom;text-align:left;font-size:.78rem;color:var(--muted);padding-top:6px}
+.reto{display:flex;gap:10px;align-items:flex-start;font-size:.88rem;color:var(--muted);border-top:1px solid var(--line);padding-top:12px;cursor:pointer}
+.reto input{width:18px;height:18px;margin-top:2px;accent-color:var(--warm);flex:0 0 auto}
+footer{font-size:.8rem;color:var(--muted);display:flex;flex-wrap:wrap;gap:4px 16px;justify-content:space-between}
+/* ---- Conceptos ---- */
+:root{--glass:#6f8794;--water:#bfe0f2;--c1:#1667c9;--c2:#e07a12;--c3:#0f9d8a;--salt:#5d7684;--sand:#b08a4e;--ok:#1a7f4b;--bad:#b3372e;--fig:#eaf1f5}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){--glass:#8fa7b3;--water:#27506a;--c1:#62adf7;--c2:#f0a94a;--c3:#4fd1bd;--salt:#c9d6dd;--sand:#c9a56a;--ok:#5fd39a;--bad:#ff8f85;--fig:#101a21} }
+:root[data-theme="dark"]{--glass:#8fa7b3;--water:#27506a;--c1:#62adf7;--c2:#f0a94a;--c3:#4fd1bd;--salt:#c9d6dd;--sand:#c9a56a;--ok:#5fd39a;--bad:#ff8f85;--fig:#101a21}
+.mode{display:flex;gap:4px;background:var(--chip);padding:4px;border-radius:12px;align-self:flex-start}
+.mode button{font:600 .95rem var(--body);padding:.55rem 1rem;border-radius:9px;border:0;background:transparent;color:var(--muted);cursor:pointer}
+.mode button[aria-current="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.14)}
+#lab,#con{display:flex;flex-direction:column;gap:16px}
+.score{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;justify-content:space-between;font-weight:600;font-variant-numeric:tabular-nums}
+.btn{font:600 .88rem var(--body);padding:.5rem .8rem;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
+.btn:disabled{color:var(--muted);cursor:default}
+.btn.on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.topic{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:14px;min-width:0;scroll-margin-top:12px}
+.topic h2{font-family:var(--display);font-size:1.35rem;line-height:1.2;margin:0;text-wrap:balance}
+.tb{display:grid;grid-template-columns:minmax(0,1fr);gap:14px;align-items:center}
+@media (min-width:760px){.tb{grid-template-columns:minmax(0,1fr) minmax(0,1.1fr)}}
+.ill{margin:0;background:var(--fig);border-radius:12px;padding:8px;min-width:0}
+.ill svg{display:block;width:100%;height:auto}
+.ill figcaption{font-size:.82rem;color:var(--muted);text-align:center;padding:4px 4px 2px}
+.tx{display:flex;flex-direction:column;gap:10px;min-width:0}
+.tx p{margin:0;max-width:62ch}
+.tx b{font-weight:700}
+.gl{fill:none;stroke:var(--glass);stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.lq.w{fill:var(--water)}.lq.b{fill:var(--c1);fill-opacity:.42}.lq.o{fill:var(--c2);fill-opacity:.5}
+.pt.b{fill:var(--c1)}.pt.o{fill:var(--c2)}.pt.k{fill:var(--salt)}.pt.sand{fill:var(--sand)}
+.st{fill:var(--ink);font:600 13px var(--body)}.st.m{fill:var(--muted);font-weight:500}
+.zo{fill:var(--surface);stroke:var(--ink);stroke-width:2}
+.ln{fill:none;stroke:var(--ink);stroke-width:1.5;stroke-dasharray:4 4}
+.ax{fill:none;stroke:var(--ink);stroke-width:1.5}.gr{stroke:var(--line);stroke-width:1}
+.cv{fill:none;stroke-width:2;stroke-linejoin:round;opacity:.55}.cv.on{stroke-width:3.5;opacity:1}
+.cv.c1{stroke:var(--c1)}.cv.c2{stroke:var(--c2)}.cv.c3{stroke:var(--c3)}
+.dot{fill:var(--ink);stroke:var(--surface);stroke-width:2}
+.ctl{display:flex;flex-direction:column;gap:10px}
+.ctl label{display:grid;grid-template-columns:1fr auto;gap:2px 10px;font-size:.9rem}
+.ctl label input{grid-column:1/-1;width:100%;accent-color:var(--accent)}
+.ctl output{font-weight:700;font-variant-numeric:tabular-nums}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.out{font-weight:600}
+.form{font-family:var(--display);font-size:1.1rem;font-weight:700;background:var(--chip);border-radius:10px;padding:10px 12px;text-align:center;font-variant-numeric:tabular-nums}
+.units{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,210px),1fr));gap:10px}
+.unit{border:1px solid var(--line);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:8px;font-size:.9rem}
+.unit .u{font:700 1.4rem var(--display);color:var(--accent)}
+.unit p{margin:0}
+.frac{display:inline-flex;flex-direction:column;text-align:center;vertical-align:middle;font-size:.86rem}
+.frac span:first-child{border-bottom:1.5px solid var(--ink);padding:0 6px 2px}.frac span:last-child{padding:2px 6px 0}
+.quiz{display:flex;flex-direction:column;gap:14px}
+.q{border-top:1px solid var(--line);padding-top:14px;display:flex;flex-direction:column;gap:10px}
+.q p{margin:0;max-width:70ch}
+.opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr));gap:8px}
+.opts button{text-align:left;font:500 .92rem var(--body);padding:.6rem .75rem;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink);cursor:pointer;display:flex;gap:8px}
+.opts button b{color:var(--muted)}
+.opts button:disabled{cursor:default;color:var(--ink)}
+.opts button.ok{border-color:var(--ok);box-shadow:inset 0 0 0 1px var(--ok)}
+.opts button.bad{border-color:var(--bad);box-shadow:inset 0 0 0 1px var(--bad)}
+.fb{font-size:.9rem;border-radius:10px;padding:10px 12px;background:var(--chip)}
+.fb b.ok{color:var(--ok)}.fb b.bad{color:var(--bad)}
+</style>
+</head>
+<body>
+
+<main class="wrap">
+  <header>
+    <p class="eyebrow">Química 10.° · Laboratorio</p>
+    <h1>Práctica de soluciones</h1>
+  </header>
+
+  <nav class="mode" id="mode" aria-label="Secciones">
+    <button data-m="lab" aria-current="true">Laboratorio</button>
+    <button data-m="con" aria-current="false">Conceptos</button>
+  </nav>
+
+  <div id="lab">
+  <nav class="tabs" id="tabs" aria-label="Partes de la práctica">
+    <button data-p="1">1 · % p/V</button>
+    <button data-p="2">2 · Molaridad</button>
+    <button data-p="3">3 · Dilución</button>
+    <button data-p="4">4 · Saturación</button>
+    <button data-p="5">5 · Análisis</button>
+  </nav>
+
+  <div class="grid">
+    <section class="stagebox">
+      <canvas id="stage" role="img" aria-label="Animación del montaje de laboratorio para el paso actual"></canvas>
+      <div class="transport">
+        <button id="prev" aria-label="Paso anterior"><svg viewBox="0 0 20 20"><path d="M4 3h2v14H4zM17 3v14L7 10z"/></svg></button>
+        <button id="play" class="play" aria-label="Reproducir"><svg viewBox="0 0 20 20"><path id="playico" d="M5 3l12 7-12 7z"/></svg></button>
+        <button id="next" aria-label="Paso siguiente"><svg viewBox="0 0 20 20"><path d="M14 3h2v14h-2zM3 3v14l10-7z"/></svg></button>
+        <input id="scrub" type="range" min="0" max="1000" value="0" aria-label="Avance dentro del paso">
+        <button id="speed" aria-label="Velocidad">1×</button>
+      </div>
+    </section>
+
+    <section class="panel" aria-live="polite">
+      <p class="eyebrow" id="where"></p>
+      <h2 id="stitle"></h2>
+      <p id="stext"></p>
+      <div class="ver"><span>Fíjate en</span><p id="sver"></p></div>
+      <div class="tw" id="satwrap" hidden>
+        <table>
+          <caption>Masas de ejemplo: usa las de tu guía. Los 100 mL iniciales ya traen unos 1,75 g de NaCl.</caption>
+          <thead><tr><th>Adición</th><th>Agregado total</th><th>¿Se disuelve?</th><th>Estado</th></tr></thead>
+          <tbody id="sat"></tbody>
+        </table>
+      </div>
+      <label class="reto" for="hide"><input type="checkbox" id="hide"><span>Modo reto: ocultar los valores que el estudiante debe calcular (masas y volumen de la alícuota).</span></label>
+    </section>
+  </div>
+
+  </div>
+
+  <div id="con" hidden>
+    <div class="score"><span id="score"></span><button class="btn" id="again">Reiniciar práctica</button></div>
+    <nav class="tabs" id="ctabs" aria-label="Conceptos">
+      <button data-t="1">Solución</button><button data-t="2">Componentes</button><button data-t="3">Tipos</button><button data-t="4">Solubilidad</button><button data-t="5">Curvas</button><button data-t="6">Dilución</button><button data-t="7">Concentración</button>
+    </nav>
+
+    <article class="topic" id="t1">
+      <h2>¿Qué es una solución?</h2>
+      <div class="tb">
+        <figure class="ill" id="f1"></figure>
+        <div class="tx">
+          <p>Una solución es una <b>mezcla homogénea</b>: sus componentes se reparten de manera uniforme y forman una sola fase.</p>
+          <p>Las partículas disueltas no se ven, no se asientan y atraviesan un filtro. El suero casero, el agua de panela y el aire son soluciones.</p>
+        </div>
+      </div>
+      <div class="quiz" data-t="1"></div>
+    </article>
+
+    <article class="topic" id="t2">
+      <h2>Componentes de una solución</h2>
+      <div class="tb">
+        <figure class="ill" id="f2"></figure>
+        <div class="tx">
+          <p><b>Soluto:</b> la sustancia que se disuelve. Está en menor cantidad.</p>
+          <p><b>Solvente:</b> la sustancia que disuelve. Está en mayor cantidad.</p>
+          <p>El agua es el solvente más común, pero no el único.</p>
+        </div>
+      </div>
+      <div class="quiz" data-t="2"></div>
+    </article>
+
+    <article class="topic" id="t3">
+      <h2>Tipos de soluciones</h2>
+      <div class="tb">
+        <figure class="ill" id="f3"></figure>
+        <div class="tx">
+          <p><b>Insaturada:</b> tiene menos soluto del que puede disolver. <b>Saturada:</b> tiene el máximo; si agregas más, queda en el fondo. <b>Sobresaturada:</b> tiene disuelto más del máximo y es inestable: cristaliza con cualquier perturbación.</p>
+          <p><b>Diluida</b> o <b>concentrada</b> dice otra cosa: si hay poco o mucho soluto en cada mililitro.</p>
+          <p>También hay soluciones gaseosas (el aire), líquidas (la gaseosa) y sólidas (el bronce).</p>
+        </div>
+      </div>
+      <div class="quiz" data-t="3"></div>
+    </article>
+
+    <article class="topic" id="t4">
+      <h2>Solubilidad</h2>
+      <div class="tb">
+        <figure class="ill" id="f4"></figure>
+        <div class="tx">
+          <p>La solubilidad es la <b>máxima cantidad de soluto</b> que se disuelve en una cantidad fija de solvente a una temperatura dada.</p>
+          <p>Para la sal de cocina es de 36 g en 100 g de agua a 20 °C. Compruébalo:</p>
+          <div class="seg"><button class="btn on" id="sAdd">Agregar 6 g de sal</button><button class="btn" id="sClr">Vaciar</button></div>
+          <p class="out" id="sOut" aria-live="polite"></p>
+        </div>
+      </div>
+      <div class="quiz" data-t="4"></div>
+    </article>
+
+    <article class="topic" id="t5">
+      <h2>Curvas de solubilidad</h2>
+      <div class="tb">
+        <figure class="ill" id="f5"></figure>
+        <div class="tx">
+          <p>Una curva de solubilidad muestra cómo cambia la solubilidad con la temperatura. Un punto <b>debajo</b> de la curva es una solución insaturada; <b>sobre</b> la curva, saturada; <b>por encima</b>, sobra soluto.</p>
+          <div class="ctl">
+            <div class="seg" id="salts"><button class="btn" data-s="KNO3">KNO₃</button><button class="btn" data-s="KCl">KCl</button><button class="btn" data-s="NaCl">NaCl</button></div>
+            <label for="cT"><span>Temperatura</span><output id="cTo"></output><input type="range" id="cT" min="0" max="80" step="5" value="40"></label>
+            <label for="cM"><span>Soluto agregado a 100 g de agua</span><output id="cMo"></output><input type="range" id="cM" min="0" max="180" step="2" value="40"></label>
+          </div>
+          <p class="out" id="cOut" aria-live="polite"></p>
+        </div>
+      </div>
+      <div class="quiz" data-t="5"></div>
+    </article>
+
+    <article class="topic" id="t6">
+      <h2>Soluciones diluidas y fórmula de dilución</h2>
+      <div class="tb">
+        <figure class="ill" id="f6"></figure>
+        <div class="tx">
+          <p>Diluir es agregar solvente. La cantidad de soluto <b>no cambia</b>: queda repartida en más volumen, y por eso la concentración baja.</p>
+          <div class="form">C₁ · V₁ = C₂ · V₂</div>
+          <div class="ctl">
+            <label for="dC"><span>Concentración inicial (C₁)</span><output id="dCo"></output><input type="range" id="dC" min="1" max="10" step="0.5" value="5"></label>
+            <label for="dV"><span>Volumen que tomas (V₁)</span><output id="dVo"></output><input type="range" id="dV" min="20" max="100" step="5" value="20"></label>
+            <label for="dW"><span>Volumen final (V₂)</span><output id="dWo"></output><input type="range" id="dW" min="100" max="500" step="50" value="100"></label>
+          </div>
+          <p class="out" id="dOut" aria-live="polite"></p>
+        </div>
+      </div>
+      <div class="quiz" data-t="6"></div>
+    </article>
+
+    <article class="topic" id="t7">
+      <h2>Unidades de concentración</h2>
+      <div class="tb">
+        <figure class="ill" id="f7"></figure>
+        <div class="tx">
+          <p>La concentración dice <b>cuánto soluto hay en una cantidad de solución</b>. Cambia la unidad según qué tan concentrada sea y para qué se use.</p>
+        </div>
+      </div>
+      <div class="units">
+        <div class="unit"><span class="u">% p/V</span><p>% p/V = <span class="frac"><span>g de soluto</span><span>mL de solución</span></span> × 100</p><p>Suero fisiológico al 0,9 % p/V: 0,9 g de NaCl en cada 100 mL.</p></div>
+        <div class="unit"><span class="u">Molaridad (M)</span><p>M = <span class="frac"><span>moles de soluto</span><span>L de solución</span></span></p><p>NaCl 0,3 M: 0,3 mol de NaCl en cada litro de solución.</p></div>
+        <div class="unit"><span class="u">ppm</span><p>ppm = <span class="frac"><span>mg de soluto</span><span>L de solución</span></span></p><p>Para soluciones muy diluidas en agua, como el cloro del agua de la llave.</p></div>
+      </div>
+      <div class="quiz" data-t="7"></div>
+    </article>
+  </div>
+
+  <footer>
+    <span>Residuos: las soluciones de sulfato de cobre van al recipiente rotulado, no al desagüe.</span>
+    <span>Creado con Claude Fable 5.2 · by @ghenamoradom</span>
+  </footer>
+</main>
+
+<script>
+(()=>{
+const cv=document.getElementById('stage'),ctx=cv.getContext('2d');
+const W=800,H=520,BY=436,G=470;let S=1,clk=0,hide=false;
+const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v)),lerp=(a,b,t)=>a+(b-a)*t,
+  seg=(t,a,b)=>clamp((t-a)/(b-a)),ease=t=>t*t*(3-2*t),fmt=(v,d=2)=>v.toFixed(d).replace('.',',');
+const base=()=>ctx.setTransform(S,0,0,S,0,0);
+function rng(seed){let a=seed>>>0;return()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+const rotPt=(px,py,x,y,a)=>[px+(x-px)*Math.cos(a)-(y-py)*Math.sin(a),py+(x-px)*Math.sin(a)+(y-py)*Math.cos(a)];
+const WATER='rgba(170,212,236,.36)';
+const cu=c=>`rgba(24,118,212,${(0.10+0.72*(1-Math.exp(-c/2.2))).toFixed(3)})`;
+const col=(k,c)=>k==='cu'?cu(c):WATER;
+const sc=(k,c)=>k==='cu'?`rgba(24,118,212,${clamp(.35+c*.1,0,.85)})`:'rgba(140,196,232,.85)';
+const FONT='Inter,system-ui,sans-serif';
+function label(s,x,y,c='#14232d',al='center',w=700){ctx.font=`${w} 20px ${FONT}`;ctx.textAlign=al;ctx.textBaseline='middle';ctx.fillStyle=c;ctx.fillText(s,x,y)}
+function rotate(o,px,py){if(o.rot){ctx.translate(px,py);ctx.rotate(o.rot);ctx.translate(-px,-py)}}
+
+/* ---------- escenario ---------- */
+function bench(){
+  let g=ctx.createLinearGradient(0,0,0,BY);g.addColorStop(0,'#dde6e9');g.addColorStop(1,'#b7c6cc');
+  ctx.fillStyle=g;ctx.fillRect(0,0,W,BY);
+  ctx.strokeStyle='rgba(255,255,255,.38)';ctx.lineWidth=1;ctx.beginPath();
+  for(let x=40;x<W;x+=90){ctx.moveTo(x,0);ctx.lineTo(x,BY)}
+  for(let y=58;y<BY;y+=90){ctx.moveTo(0,y);ctx.lineTo(W,y)}ctx.stroke();
+  g=ctx.createLinearGradient(0,BY,0,H);g.addColorStop(0,'#414c53');g.addColorStop(.1,'#2c353a');g.addColorStop(1,'#1b2125');
+  ctx.fillStyle=g;ctx.fillRect(0,BY,W,H-BY);
+  ctx.fillStyle='rgba(255,255,255,.2)';ctx.fillRect(0,BY,W,2);
+}
+function shadow(x,w){ctx.fillStyle='rgba(0,0,0,.36)';ctx.beginPath();ctx.ellipse(x,G+3,w,6,0,0,6.3);ctx.fill()}
+function gl(P,lw=2){ctx.lineJoin=ctx.lineCap='round';ctx.strokeStyle='rgba(48,74,90,.52)';ctx.lineWidth=lw+1.4;P();ctx.stroke();
+  ctx.strokeStyle='rgba(255,255,255,.92)';ctx.lineWidth=lw*.55;P();ctx.stroke()}
+function liquid(P,o,ysLocal){
+  if(!o.color)return;const ys=o.ySurf!=null?o.ySurf:ysLocal;if(ys==null&&!o.full)return;
+  ctx.save();P();ctx.closePath();ctx.clip();base();
+  const y0=o.full?-60:ys;ctx.fillStyle=o.color;ctx.fillRect(-60,y0,W+120,H+120);
+  if(!o.full){ctx.fillStyle='rgba(255,255,255,.45)';ctx.fillRect(-60,y0,W+120,1.6)}
+  if(o.inside)o.inside(y0);ctx.restore();
+}
+function crystal(x,y,k,r,s=4.2){const a=r*6.28,c=Math.cos(a)*s,d=Math.sin(a)*s;
+  ctx.beginPath();ctx.moveTo(x+c,y+d);ctx.lineTo(x-d,y+c);ctx.lineTo(x-c,y-d);ctx.lineTo(x+d,y-c);ctx.closePath();
+  if(k==='cu'){ctx.fillStyle=r<.33?'#1557a8':r<.66?'#1c6fd1':'#4b9bee';ctx.fill()}
+  else{ctx.fillStyle=r<.5?'#ffffff':'#e8eef1';ctx.fill();ctx.strokeStyle='rgba(105,124,136,.6)';ctx.lineWidth=.7;ctx.stroke()}}
+function pile(x,y,w,n,k,seed=7){const r=rng(seed),hm=Math.min(w*.32,3+Math.sqrt(n)*2.2);
+  for(let i=0;i<n;i++){const u=r()-.5,v=r(),q=r();crystal(x+u*w,y-3-v*hm*(1-4*u*u),k,q)}}
+function fall(x0,y0,x1,y1,sp,n,k,p,seed=11){const r=rng(seed);
+  for(let i=0;i<n;i++){const d=r()*.55,a=r()-.5,b=r()-.5,c=r(),q=(p-d)/.45;if(q<=0||q>=1)continue;
+    crystal(lerp(x0+a*16,x1+b*sp,q),lerp(y0,y1,q*q),k,c)}}
+
+/* ---------- material ---------- */
+function beaker(x,y,w,h,o={}){
+  const L=x-w/2,R=x+w/2,px=o.px??R,py=o.py??y-h;
+  const P=()=>{ctx.beginPath();ctx.moveTo(L-5,y-h);ctx.lineTo(L,y-h+6);ctx.lineTo(L,y-12);ctx.quadraticCurveTo(L,y,L+12,y);
+    ctx.lineTo(R-12,y);ctx.quadraticCurveTo(R,y,R,y-12);ctx.lineTo(R,y-h+6);ctx.lineTo(R+5,y-h)};
+  if(!o.rot&&!o.air)shadow(x,w*.56);
+  ctx.save();rotate(o,px,py);
+  P();ctx.closePath();ctx.fillStyle='rgba(255,255,255,.13)';ctx.fill();
+  liquid(P,o,o.level>0?y-5-(h-18)*o.level:null);
+  gl(P);
+  ctx.strokeStyle='rgba(255,255,255,.78)';ctx.lineWidth=1.2;ctx.beginPath();
+  for(let i=1;i<=4;i++){const yy=y-5-(h-18)*i/5;ctx.moveTo(x+w*.1,yy);ctx.lineTo(x+w*.1+(i%2?10:18),yy)}ctx.stroke();
+  ctx.strokeStyle='rgba(255,255,255,.45)';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(L+9,y-h+14);ctx.lineTo(L+9,y-18);ctx.stroke();
+  ctx.restore();
+}
+function funnel(x,yT){
+  ctx.fillStyle='rgba(255,255,255,.16)';ctx.beginPath();ctx.moveTo(x-36,yT-50);ctx.lineTo(x+36,yT-50);ctx.lineTo(x+5,yT-8);ctx.lineTo(x-5,yT-8);ctx.closePath();ctx.fill();
+  gl(()=>{ctx.beginPath();ctx.moveTo(x-36,yT-50);ctx.lineTo(x-5,yT-8);ctx.lineTo(x-5,yT+22);ctx.moveTo(x+36,yT-50);ctx.lineTo(x+5,yT-8);ctx.lineTo(x+5,yT+22)});
+}
+function flask(x,y,s,o={}){
+  const R=66*s,cy=y-R*.92,nw=11*s,yN=y-R*1.95,yT=y-250*s,yM=y-205*s,px=o.px??x,py=o.py??y-125*s;
+  const P=()=>{ctx.beginPath();ctx.moveTo(x-nw,yT);ctx.lineTo(x-nw,yN);
+    ctx.bezierCurveTo(x-nw,yN+30*s,x-R,cy-40*s,x-R,cy);ctx.bezierCurveTo(x-R,y-14*s,x-R*.75,y,x-R*.5,y);
+    ctx.lineTo(x+R*.5,y);ctx.bezierCurveTo(x+R*.75,y,x+R,y-14*s,x+R,cy);
+    ctx.bezierCurveTo(x+R,cy-40*s,x+nw,yN+30*s,x+nw,yN);ctx.lineTo(x+nw,yT)};
+  if(!o.rot&&!o.air)shadow(x,R*.72);
+  ctx.save();rotate(o,px,py);
+  P();ctx.closePath();ctx.fillStyle='rgba(255,255,255,.12)';ctx.fill();
+  let ys=null;if(o.v>0){const Hb=y-yN,Hn=yN-yM;ys=y-(o.v<=.9?Hb*Math.pow(o.v/.9,.72):Hb+Hn*(o.v-.9)/.1)}
+  liquid(P,o,ys);
+  gl(P);
+  ctx.strokeStyle='rgba(255,255,255,.98)';ctx.lineWidth=1.8;ctx.beginPath();ctx.moveTo(x-nw,yM);ctx.lineTo(x+nw,yM);ctx.stroke();
+  ctx.strokeStyle='rgba(255,255,255,.42)';ctx.lineWidth=3;ctx.beginPath();ctx.arc(x,cy,R-9,2.5,3.6);ctx.stroke();
+  if(o.stopper){ctx.fillStyle='#2a63ad';ctx.beginPath();ctx.moveTo(x-nw-3,yT-12);ctx.lineTo(x+nw+3,yT-12);ctx.lineTo(x+nw-2,yT+8);ctx.lineTo(x-nw+2,yT+8);ctx.closePath();ctx.fill()}
+  if(o.funnel)funnel(x,yT);
+  ctx.restore();
+  if(o.bubble){const b=rotPt(px,py,x,cy,o.rot||0);ctx.fillStyle='rgba(236,246,251,.8)';ctx.beginPath();ctx.ellipse(b[0],b[1]-R*.72,18*s,7*s,0,0,6.3);ctx.fill()}
+}
+function cylinder(x,y,h,o={}){
+  const L=x-18,R=x+18,px=o.px??R,py=o.py??y-h;
+  const P=()=>{ctx.beginPath();ctx.moveTo(L-4,y-h);ctx.lineTo(L,y-h+6);ctx.lineTo(L,y-8);ctx.lineTo(R,y-8);ctx.lineTo(R,y-h+6);ctx.lineTo(R+4,y-h)};
+  if(!o.rot&&!o.air)shadow(x,36);
+  ctx.save();rotate(o,px,py);
+  ctx.fillStyle='rgba(226,236,241,.8)';ctx.beginPath();ctx.roundRect(x-34,y-8,68,8,3);ctx.fill();ctx.strokeStyle='rgba(48,74,90,.5)';ctx.lineWidth=1;ctx.stroke();
+  P();ctx.closePath();ctx.fillStyle='rgba(255,255,255,.13)';ctx.fill();
+  liquid(P,o,o.level>0?y-8-(h-26)*o.level:null);
+  gl(P);
+  ctx.strokeStyle='rgba(255,255,255,.8)';ctx.lineWidth=1.1;ctx.beginPath();
+  for(let i=1;i<=10;i++){const yy=y-8-(h-26)*i/10;ctx.moveTo(R-3,yy);ctx.lineTo(R-(i%5?11:19),yy)}ctx.stroke();
+  if(o.mark&&!o.rot){const yy=y-8-(h-26)*o.mark;ctx.strokeStyle='#14232d';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(L-16,yy);ctx.lineTo(L-3,yy);ctx.stroke();label(o.markTxt,L-20,yy,'#14232d','right')}
+  ctx.restore();
+}
+function bottle(x,y,o={}){
+  const w=88,h=172,L=x-w/2,R=x+w/2,px=o.px??x+14,py=o.py??y-h-20;
+  const P=()=>{ctx.beginPath();ctx.moveTo(x-14,y-h-20);ctx.lineTo(x-14,y-h);ctx.quadraticCurveTo(L,y-h+8,L,y-h+34);ctx.lineTo(L,y-12);ctx.quadraticCurveTo(L,y,L+12,y);
+    ctx.lineTo(R-12,y);ctx.quadraticCurveTo(R,y,R,y-12);ctx.lineTo(R,y-h+34);ctx.quadraticCurveTo(R,y-h+8,x+14,y-h);ctx.lineTo(x+14,y-h-20)};
+  if(!o.rot&&!o.air)shadow(x,50);
+  ctx.save();rotate(o,px,py);
+  P();ctx.closePath();ctx.fillStyle='rgba(255,255,255,.17)';ctx.fill();
+  liquid(P,o,o.level>0?y-4-(h-10)*o.level:null);
+  ctx.lineJoin='round';ctx.strokeStyle='rgba(48,74,90,.46)';ctx.lineWidth=2.6;P();ctx.stroke();ctx.strokeStyle='rgba(255,255,255,.72)';ctx.lineWidth=1;P();ctx.stroke();
+  if(o.tag){ctx.fillStyle='rgba(255,255,255,.95)';ctx.beginPath();ctx.roundRect(L+6,y-106,w-12,46,3);ctx.fill();ctx.strokeStyle='rgba(48,74,90,.35)';ctx.lineWidth=1;ctx.stroke();label(o.tag,x,y-82)}
+  if(o.cap){ctx.fillStyle='#2a63ad';ctx.beginPath();ctx.roundRect(x-18,y-h-29,36,20,4);ctx.fill()}
+  ctx.restore();
+}
+function balance(x,y,txt){shadow(x,102);
+  let g=ctx.createLinearGradient(0,y-46,0,y);g.addColorStop(0,'#f3f5f6');g.addColorStop(1,'#c2cacf');
+  ctx.fillStyle=g;ctx.beginPath();ctx.roundRect(x-98,y-46,196,46,9);ctx.fill();ctx.strokeStyle='rgba(60,75,85,.5)';ctx.lineWidth=1;ctx.stroke();
+  ctx.fillStyle='#10261c';ctx.beginPath();ctx.roundRect(x-62,y-38,124,30,4);ctx.fill();
+  if(txt){ctx.fillStyle='#86f7b4';ctx.font='700 20px ui-monospace,Menlo,Consolas,monospace';ctx.textAlign='right';ctx.textBaseline='middle';ctx.fillText(txt,x+54,y-22)}
+  ctx.fillStyle='#8f9aa1';ctx.fillRect(x-7,y-56,14,10);
+  g=ctx.createLinearGradient(0,y-68,0,y-52);g.addColorStop(0,'#f0f2f3');g.addColorStop(1,'#a9b3b9');
+  ctx.fillStyle=g;ctx.beginPath();ctx.ellipse(x,y-60,78,8,0,0,6.3);ctx.fill();ctx.strokeStyle='rgba(60,75,85,.55)';ctx.stroke();
+  return y-64}
+function watch(x,y,o={}){ctx.save();rotate(o,x,y);
+  const P=()=>{ctx.beginPath();ctx.moveTo(x-42,y-9);ctx.quadraticCurveTo(x,y+9,x+42,y-9)};
+  P();ctx.closePath();ctx.fillStyle='rgba(255,255,255,.24)';ctx.fill();
+  if(o.n>0)pile(x,y+1,52,o.n,o.kind,7);
+  gl(P,2.2);ctx.restore()}
+function jar(x,y,k,open){shadow(x,46);
+  ctx.fillStyle='#f4f5f3';ctx.beginPath();ctx.roundRect(x-40,y-86,80,86,8);ctx.fill();ctx.strokeStyle='rgba(60,75,85,.45)';ctx.lineWidth=1;ctx.stroke();
+  ctx.fillStyle=k==='cu'?'#1f6fd0':'#6f7e88';ctx.fillRect(x-40,y-64,80,40);label(k==='cu'?'CuSO₄':'NaCl',x,y-43,'#fff');
+  if(!open){ctx.fillStyle='#2b3940';ctx.beginPath();ctx.roundRect(x-36,y-100,72,16,4);ctx.fill()}}
+function spatula(x,y,ld,k){ctx.strokeStyle='#8d979d';ctx.lineWidth=3.5;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(x+8,y-9);ctx.lineTo(x+62,y-72);ctx.stroke();
+  ctx.save();ctx.translate(x,y);ctx.rotate(-.86);ctx.fillStyle='#b8c1c6';ctx.beginPath();ctx.roundRect(-4,-6,22,10,3);ctx.fill();ctx.restore();
+  if(ld)pile(x+4,y-3,14,7,k,3)}
+function rod(x,yb,ph){const dx=Math.sin(ph)*16;gl(()=>{ctx.beginPath();ctx.moveTo(x+dx*.3+28,yb-200);ctx.lineTo(x+dx,yb)},3)}
+function wash(x,y,o={}){const px=x,py=y-55;if(!o.air)shadow(x,36);
+  ctx.save();rotate(o,px,py);
+  ctx.fillStyle='rgba(244,248,250,.66)';ctx.beginPath();ctx.roundRect(x-30,y-104,60,104,[16,16,8,8]);ctx.fill();ctx.strokeStyle='rgba(48,74,90,.45)';ctx.lineWidth=1.4;ctx.stroke();
+  ctx.fillStyle='rgba(120,190,230,.38)';ctx.beginPath();ctx.roundRect(x-28,y-66,56,64,[2,2,7,7]);ctx.fill();
+  ctx.fillStyle='#d2452f';ctx.beginPath();ctx.roundRect(x-13,y-118,26,16,3);ctx.fill();
+  const T=()=>{ctx.beginPath();ctx.moveTo(x,y-118);ctx.lineTo(x,y-140);ctx.lineTo(x-58,y-128)};
+  ctx.lineJoin=ctx.lineCap='round';ctx.strokeStyle='rgba(48,74,90,.55)';ctx.lineWidth=6.5;T();ctx.stroke();ctx.strokeStyle='#eef3f5';ctx.lineWidth=4;T();ctx.stroke();
+  ctx.restore();return rotPt(px,py,x-58,y-128,o.rot||0)}
+function stream(x1,y1,x2,y2,c,w=4){ctx.lineCap='round';ctx.strokeStyle=c;ctx.lineWidth=w;ctx.beginPath();ctx.moveTo(x1,y1);ctx.quadraticCurveTo(x2,y1,x2,y2);ctx.stroke();
+  ctx.strokeStyle='rgba(255,255,255,.5)';ctx.lineWidth=w*.3;ctx.stroke()}
+function inset(cx,cy,r,vv,k,al,tx,ty){ctx.save();ctx.globalAlpha=al;
+  ctx.strokeStyle='rgba(20,35,45,.6)';ctx.lineWidth=1.5;ctx.setLineDash([5,5]);ctx.beginPath();ctx.moveTo(cx+r*.75,cy+r*.6);ctx.lineTo(tx,ty);ctx.stroke();ctx.setLineDash([]);
+  ctx.beginPath();ctx.arc(cx,cy,r,0,6.3);ctx.fillStyle='#e9eff2';ctx.fill();ctx.save();ctx.clip();
+  const hw=r*.5,yb=cy+(1-vv)*r*.8;
+  const M=()=>{ctx.beginPath();ctx.moveTo(cx-hw,yb-13);ctx.quadraticCurveTo(cx,yb+13,cx+hw,yb-13)};
+  M();ctx.lineTo(cx+hw,cy+r);ctx.lineTo(cx-hw,cy+r);ctx.closePath();ctx.fillStyle=k==='cu'?cu(.8):WATER;ctx.fill();
+  ctx.strokeStyle='rgba(255,255,255,.95)';ctx.lineWidth=2;M();ctx.stroke();
+  gl(()=>{ctx.beginPath();ctx.moveTo(cx-hw,cy-r);ctx.lineTo(cx-hw,cy+r);ctx.moveTo(cx+hw,cy-r);ctx.lineTo(cx+hw,cy+r)},3);
+  ctx.strokeStyle='#14232d';ctx.lineWidth=2.2;ctx.beginPath();ctx.moveTo(cx-hw-12,cy);ctx.lineTo(cx+hw+12,cy);ctx.stroke();
+  ctx.restore();ctx.strokeStyle='#14232d';ctx.lineWidth=3;ctx.beginPath();ctx.arc(cx,cy,r,0,6.3);ctx.stroke();ctx.restore()}
+function lens(cx,cy,r,n,k,sc0){if(sc0<=0)return;ctx.save();ctx.translate(cx,cy);ctx.scale(sc0,sc0);
+  ctx.beginPath();ctx.arc(0,0,r,0,6.3);ctx.fillStyle='#f3f8fa';ctx.fill();ctx.strokeStyle='#14232d';ctx.lineWidth=3;ctx.stroke();
+  const q=rng(n*13+5);ctx.fillStyle=k==='cu'?'#1c6fd1':'#62727c';
+  for(let i=0;i<n;i++){const a=q()*6.28,d=Math.sqrt(q())*(r-9);ctx.beginPath();ctx.arc(Math.cos(a)*d+Math.sin(clk*2.2+i)*2.4,Math.sin(a)*d+Math.cos(clk*1.8+i*1.7)*2.4,k==='cu'?4:3.4,0,6.3);ctx.fill()}
+  ctx.restore()}
+
+/* ---------- escenas, Partes 1 y 2 ---------- */
+const BAL=128,JX=272,BK=398,FL=592,WB=736,FS=1.1,FH=275;
+const KIND={cu:{m:5,n:70},na:{m:4.38,n:62}};
+function sWeigh(k,t){const K=KIND[k];bench();
+  flask(FL,G,FS);wash(WB,G);beaker(BK,G,90,105,{level:.5,color:WATER});jar(JX,G,k,true);
+  const p=ease(seg(t,.12,.88)),py=balance(BAL,G,hide&&p>0?'?,?? g':fmt(K.m*p)+' g');
+  watch(BAL,py-2,{n:Math.round(K.n*p),kind:k});
+  if(t>.1&&t<.9){const ph=(seg(t,.1,.9)*4)%1,q=ease(ph<.5?ph*2:2-ph*2);
+    spatula(lerp(JX-4,BAL+10,q),lerp(G-104,py-24,q)-Math.sin(q*Math.PI)*46,ph<.5,k)}
+}
+function sDissolve(k,t){const K=KIND[k];bench();flask(FL,G,FS);wash(WB,G);jar(JX,G,k);
+  const py=balance(BAL,G,''),go=ease(seg(t,0,.16)),back=ease(seg(t,.42,.56)),m=go*(1-back);
+  const wx=lerp(BAL,BK-36,m),wy=lerp(py-2,G-160,m),wr=ease(seg(t,.14,.26))*(1-back)*.95;
+  const inB=seg(t,.2,.42),d=ease(seg(t,.44,.96)),ys=G-5-87*.5;
+  let c=WATER;if(k==='cu'){c=ctx.createLinearGradient(0,ys,0,G);c.addColorStop(0,cu(6*d*d));c.addColorStop(1,cu(6*Math.sqrt(d)))}
+  beaker(BK,G,90,105,{level:.5,color:c,inside:()=>pile(BK,G-2,70,Math.round(K.n*inB*(1-d)),k,5)});
+  if(t>.2&&t<.47)fall(wx+30,wy+8,BK,G-8,50,K.n,k,seg(t,.2,.46));
+  watch(wx,wy,{n:Math.round(K.n*(1-seg(t,.18,.34))),kind:k,rot:wr});
+  if(t>.4)rod(BK-4,G-10,clk*5)}
+function sTransfer(k,t){bench();jar(JX,G,k);const py=balance(BAL,G,'');watch(BAL,py-2);
+  const pour=seg(t,.28,.55),rin=seg(t,.66,.93),v=.32*pour+.1*rin;
+  flask(FL,G,FS,{v,color:col(k,6*.32/Math.max(v,.32)),funnel:true});
+  const a=ease(seg(t,0,.14)),tl=seg(t,.12,.28),sx=lerp(BK+45,FL-16,a),sy=lerp(G-105,G-FH-64,a),rot=ease(tl)*1.25;
+  const o={px:sx,py:sy,rot,air:a>0};
+  if(rot===0){o.level=.5;o.color=col(k,6)}
+  else if(pour<1){o.color=col(k,6);o.ySurf=lerp(sy+56,sy+3,tl)+30*pour}
+  else if(rin>0&&rin<1){o.color=col(k,.8);o.ySurf=sy+33-5*Math.sin(rin*Math.PI)}
+  beaker(sx-45,sy+105,90,105,o);
+  if(pour>0&&pour<1)stream(sx+2,sy+2,FL,G-FH-34,sc(k,6),5);
+  const b=ease(seg(t,.56,.66))*(1-ease(seg(t,.94,1))),nz=wash(lerp(WB,FL+128,b),lerp(G,G-300,b),{rot:-.3*b,air:b>0});
+  if(rin>0&&rin<1){stream(nz[0],nz[1],sx-34,sy-24,sc('na'),3);stream(sx+2,sy+2,FL,G-FH-34,sc(k,.8),2.6)}}
+function sFill(k,t){bench();jar(JX,G,k);const py=balance(BAL,G,'');watch(BAL,py-2);beaker(BK,G,90,105);
+  const f=ease(seg(t,.1,.62)),dr=seg(t,.7,.95),v=.42+.54*f+.04*dr;
+  let c=WATER;if(k==='cu'){c=ctx.createLinearGradient(0,G-FH,0,G);c.addColorStop(0,cu(.3));c.addColorStop(.55,cu(.9/v));c.addColorStop(1,cu(4/v))}
+  flask(FL,G,FS,{v,color:c});
+  const b=ease(seg(t,0,.1))*(1-ease(seg(t,.96,1))),nz=wash(lerp(WB,FL+62,b),lerp(G,G-FH+114,b),{air:b>0});
+  if(f>0&&f<1)stream(nz[0],nz[1],FL,nz[1]+70,sc('na'),3.4);
+  if(dr>0&&dr<1){const q=(dr*4)%1;ctx.fillStyle=sc('na');ctx.beginPath();ctx.arc(FL,lerp(nz[1]+4,G-225,q),3.2,0,6.3);ctx.fill()}
+  inset(205,170,98,seg(v,.9,1),k,seg(t,.5,.62),FL-14,G-225)}
+function invertFlask(x,k,c0,q,N,lift,strat){
+  const ang=Math.PI*(.5-.5*Math.cos(q*N*2*Math.PI)),up=Math.abs(Math.sin(ang/2))<.2,y=G-lift;
+  let c=WATER;if(k==='cu'){c=ctx.createLinearGradient(0,y-FH,0,y);c.addColorStop(0,cu(c0*lerp(strat?.2:1,1,q)));c.addColorStop(1,cu(c0*lerp(strat?2:1,1,q)))}
+  flask(x,y,FS,up?{v:1,color:c,stopper:true,rot:ang,air:lift>0}:{full:true,color:c,stopper:true,rot:ang,bubble:true,air:true});
+  return Math.min(N,Math.floor(q*N+.5))}
+function sInvert(k,t){bench();jar(JX,G,k);const py=balance(BAL,G,'');watch(BAL,py-2);beaker(BK,G,90,105);wash(WB,G);
+  const lift=ease(seg(t,0,.08))*(1-ease(seg(t,.94,1)))*70,n=invertFlask(FL,k,2,seg(t,.08,.94),10,lift,true);
+  label(n+' / 10',FL-150,120)}
+
+/* ---------- Parte 3 ---------- */
+const F3=150,CY=262,B1=372,B2=520;
+function pourFlask(t,tx,c,t0,t1,t2,t3,full=true){ // devuelve progreso de vertido
+  const a=ease(seg(t,t0,t0+.16)),p=seg(t,t0+.18,t1),back=ease(seg(t,t2,t3)),m=a*(1-back);
+  const mx=lerp(F3,tx-10,m),my=lerp(G-FH,G-250,m),o={px:mx,py:my,rot:2*m,air:m>0};
+  if(p<=0){o.color=c;if(m>0)o.full=true;else{o.v=1;o.stopper=true}}
+  else if(p<1){o.color=c;o.ySurf=lerp(my-215,my-2,p)}
+  flask(mx,my+FH,FS,o);
+  if(p>0&&p<1)stream(mx+4,my,tx,G-232,c===WATER?sc('na'):sc('cu',c===cu(2)?2:.4),5);
+  return p}
+function s31(t){bench();wash(WB,G);cylinder(CY,G,190);bottle(B2,G);
+  const p=seg(t,.2,.84);
+  bottle(B1,G,{level:.86*p,color:cu(2),cap:t>.9,tag:t>.93?'2 %':null});
+  if(t<.88)funnel(B1,G-192);
+  pourFlask(t,B1,cu(2),.02,.84,.88,1);
+  const al=seg(t,.86,.94);if(al>0){ctx.save();ctx.globalAlpha=al;
+    ctx.fillStyle='#fffef8';ctx.beginPath();ctx.roundRect(520,56,262,172,8);ctx.fill();ctx.strokeStyle='rgba(20,35,45,.4)';ctx.lineWidth=1.5;ctx.stroke();
+    label('RÓTULO',651,82,'#586a75');label('CuSO₄·5H₂O',651,118);label('2 % p/V',651,150);label('Fecha · Grupo',651,196,'#586a75','center',500);
+    ctx.strokeStyle='rgba(20,35,45,.25)';ctx.beginPath();ctx.moveTo(540,172);ctx.lineTo(762,172);ctx.stroke();ctx.restore()}}
+function s32(t){bench();wash(WB,G);flask(F3,G,FS);bottle(B2,G);
+  const a=ease(seg(t,.02,.2)),p=seg(t,.22,.68),back=ease(seg(t,.72,.92)),m=a*(1-back);
+  cylinder(CY,G,190,{level:.5*p,color:cu(2),mark:hide?0:.5,markTxt:'50'});
+  const mx=lerp(B1-14,CY+6,m),my=lerp(G-192,G-205,m),o={px:mx,py:my,rot:-1.75*m,color:cu(2),tag:'2 %',cap:m<=0,air:m>0};
+  if(m<=0)o.level=t<.5?.86:.69;else o.ySurf=back>0?lerp(G-116,my-56,m):lerp(G-143,my-78,a)+22*p;
+  bottle(mx+14,my+192,o);
+  if(p>0&&p<1)stream(mx-2,my+2,CY,G-176,sc('cu',2),4)}
+function s33(t){bench();bottle(B1,G,{level:.69,color:cu(2),tag:'2 %',cap:1});bottle(B2,G);
+  const a=ease(seg(t,.01,.1)),p=seg(t,.11,.27),back=ease(seg(t,.29,.37)),m=a*(1-back);
+  const fl=ease(seg(t,.4,.72)),v=.2*p+.8*fl,q=seg(t,.76,.97),lift=ease(seg(t,.73,.77))*(1-ease(seg(t,.97,1)))*70;
+  if(t<.73){const st=seg(v,.2,.55);let c=ctx.createLinearGradient(0,G-FH,0,G);
+    c.addColorStop(0,cu(lerp(2,.15,st)));c.addColorStop(.6,cu(lerp(2,.35,st)));c.addColorStop(1,cu(lerp(2,1.4,st)));
+    flask(F3,G,FS,{v,color:c,funnel:t<.4})}
+  else invertFlask(F3,'cu',.4,q,3,lift,true);
+  const cxp=lerp(CY-18,F3+16,m),cyp=lerp(G-190,G-FH-62,m),o={px:cxp,py:cyp,rot:-1.9*m,air:m>0};
+  if(m<=0){if(t<.11){o.level=.5;o.color=cu(2)}}else if(p<1){o.color=cu(2);o.ySurf=lerp(G-90,cyp-34,a)+34*p}
+  cylinder(cxp+18,cyp+190,190,o);
+  if(p>0&&p<1)stream(cxp-2,cyp+2,F3,G-FH-34,sc('cu',2),4);
+  const b=ease(seg(t,.33,.41))*(1-ease(seg(t,.72,.8))),nz=wash(lerp(WB,F3+62,b),lerp(G,G-FH+114,b),{air:b>0});
+  if(fl>0&&fl<1)stream(nz[0],nz[1],F3,nz[1]+70,sc('na'),3.4)}
+function s34(t){bench();wash(WB,G);
+  const sh=ease(seg(t,.72,.86));if(sh>0){ctx.fillStyle='#fdfdfa';ctx.fillRect(B1-74,G-262*sh,B2-B1+148,262*sh+4);ctx.strokeStyle='rgba(20,35,45,.2)';ctx.lineWidth=1;ctx.strokeRect(B1-74,G-262*sh,B2-B1+148,262*sh+4)}
+  cylinder(CY,G,190);
+  bottle(B1,G,{level:.69,color:cu(2),tag:'2 %',cap:1});
+  const p=seg(t,.2,.6);
+  bottle(B2,G,{level:.86*p,color:cu(.4),tag:t>.67?'0,4 %':null,cap:t>.64});
+  if(t<.62)funnel(B2,G-192);
+  pourFlask(t,B2,cu(.4),.02,.6,.62,.72)}
+
+/* ---------- Parte 4 ---------- */
+const ADD=[10,10,14,5,5],DIS=[10,10,14,0,0],CUM=[10,20,34,39,44],SED=[0,0,0,0,5],B4=400,
+  EST=['Insaturada','Insaturada','Saturada','Saturada + exceso','Saturada + exceso'];
+function s41(t){bench();
+  const a=ease(seg(t,.01,.11)),p=seg(t,.12,.42),back=ease(seg(t,.44,.54)),m=a*(1-back);
+  const a2=ease(seg(t,.56,.66)),p2=seg(t,.67,.9),b2=ease(seg(t,.92,1)),m2=a2*(1-b2);
+  beaker(560,G,130,150,{level:.42*p2,color:WATER});
+  const mx=lerp(F3,322,m),my=lerp(G-FH,G-222,m),o={px:mx,py:my,rot:1.95*m,air:m>0,color:WATER};
+  if(m<=0){o.v=t<.3?1:.62;o.stopper=t<.01}else if(p<=0)o.full=true;else o.ySurf=back>0?lerp(G-108,my-95,m):lerp(my-215,my-95,p);
+  flask(mx,my+FH,FS,o);
+  if(p>0&&p<1)stream(mx+4,my,330,G-196,sc('na'),5);
+  const px2=lerp(348,506,m2),py2=lerp(G-210,G-166,m2),c={px:px2,py:py2,rot:1.85*m2,air:m2>0,mark:1,markTxt:'100'};
+  if(m2<=0){if(t<.6){c.level=p;c.color=WATER}}else if(p2<1){c.color=WATER;c.ySurf=lerp(G-192,py2-34,a2)+34*p2}
+  cylinder(px2-18,py2+210,210,c);
+  if(p2>0&&p2<1)stream(px2+2,py2+2,530,G-40,sc('na'),4.5)}
+function graph(i,t){
+  const x0=582,y0=330,gw=186,gh=180,X=v=>x0+v/50*gw,Y=v=>y0-v/40*gh;
+  ctx.fillStyle='rgba(255,255,255,.86)';ctx.beginPath();ctx.roundRect(528,92,262,296,10);ctx.fill();
+  const n=i<0?0:i+(t>.93?1:0);
+  if(n>0)label(EST[n-1],659,118);
+  ctx.strokeStyle='rgba(20,35,45,.15)';ctx.lineWidth=1;ctx.beginPath();
+  for(let v=10;v<=40;v+=10){ctx.moveTo(x0,Y(v));ctx.lineTo(x0+gw,Y(v))}for(let v=10;v<=50;v+=10){ctx.moveTo(X(v),y0);ctx.lineTo(X(v),y0-gh)}ctx.stroke();
+  ctx.strokeStyle='#14232d';ctx.lineWidth=1.8;ctx.beginPath();ctx.moveTo(x0,y0-gh);ctx.lineTo(x0,y0);ctx.lineTo(x0+gw,y0);ctx.stroke();
+  label('g agregados',x0+gw/2,y0+30,'#14232d','center',500);
+  ctx.save();ctx.translate(x0-28,y0-gh/2);ctx.rotate(-Math.PI/2);label('g disueltos',0,0,'#14232d','center',500);ctx.restore();
+  if(n>=3){ctx.strokeStyle='#a85a0a';ctx.setLineDash([6,5]);ctx.lineWidth=1.6;ctx.beginPath();ctx.moveTo(x0,Y(34));ctx.lineTo(x0+gw,Y(34));ctx.stroke();ctx.setLineDash([])}
+  ctx.strokeStyle='#1667c9';ctx.lineWidth=2.6;ctx.lineJoin='round';ctx.beginPath();ctx.moveTo(X(0),Y(0));
+  for(let j=0;j<n;j++)ctx.lineTo(X(CUM[j]),Y(Math.min(CUM[j],34)));ctx.stroke();
+  ctx.fillStyle='#1667c9';for(let j=-1;j<n;j++){ctx.beginPath();ctx.arc(X(j<0?0:CUM[j]),Y(j<0?0:Math.min(CUM[j],34)),5,0,6.3);ctx.fill()}}
+function sSat(i,t){bench();jar(JX,G,'na');
+  const m=ADD[i],go=ease(seg(t,.12,.26)),back=ease(seg(t,.46,.58)),mv=go*(1-back);
+  const py=balance(BAL,G,t<.14?fmt(m)+' g':'');
+  const wx=lerp(BAL,B4-48,mv),wy=lerp(py-2,G-216,mv),wr=ease(seg(t,.24,.34))*(1-back)*.95;
+  const enter=seg(t,.28,.48),e=ease(seg(t,.48,.93)),grams=SED[i]+m*enter-DIS[i]*e,stir=t>.42&&t<.93;
+  const level=.42+.0026*((i?CUM[i-1]:0)+m*enter);
+  beaker(B4,G,130,150,{level,color:WATER,inside:ys=>{pile(B4,G-2,104,Math.round(grams*6),'na',5);
+    if(stir&&grams>1){const r=rng(21);for(let j=0;j<Math.min(22,grams*2);j++){const a=clk*3.2+j*1.3;crystal(B4+Math.cos(a)*(18+r()*34),lerp(ys+16,G-14,r())+Math.sin(a*1.3)*6,'na',r(),3.4)}}}});
+  if(t>.28&&t<.52)fall(wx+30,wy+8,B4,G-10,84,m*6,'na',seg(t,.28,.5));
+  watch(wx,wy,{n:t<.46?Math.round(m*6*(1-seg(t,.27,.42))):0,kind:'na',rot:wr});
+  if(stir)rod(B4-6,G-12,clk*5);
+  graph(i,t)}
+function s5(t){bench();
+  ctx.fillStyle='#fdfdfa';ctx.fillRect(66,G-262,356,266);
+  bottle(150,G,{level:.69,color:cu(2),tag:'2 %',cap:1});bottle(336,G,{level:.86,color:cu(.4),tag:'0,4 %',cap:1});
+  beaker(610,G,130,150,{level:.54,color:WATER,inside:()=>pile(610,G-2,104,60,'na',5)});
+  lens(150,104,66,46,'cu',ease(seg(t,.05,.2)));lens(336,104,66,9,'cu',ease(seg(t,.28,.43)));lens(610,104,66,80,'na',ease(seg(t,.52,.67)));
+  if(t>.2)label('Concentrada',150,226);if(t>.43)label('Diluida',336,226);if(t>.67)label('Saturada',610,226)}
+
+/* ---------- guion ---------- */
+const hv=(a,b)=>()=>hide?b:a;
+const STEPS=[
+ {p:1,d:7,title:'Tara y pesa el soluto',draw:t=>sWeigh('cu',t),
+  text:hv('Pon el vidrio de reloj en la balanza y presiona TARA. Agrega sulfato de cobre pentahidratado con la espátula hasta llegar a 5,00 g.','Pon el vidrio de reloj en la balanza y presiona TARA. Agrega sulfato de cobre pentahidratado con la espátula hasta llegar a la masa que calculaste.'),
+  ver:'La lectura sube poco a poco: el soluto se agrega en porciones pequeñas, no de un golpe.'},
+ {p:1,d:8,title:'Disuelve en el vaso',draw:t=>sDissolve('cu',t),
+  text:()=>'Pasa los cristales a un vaso con unos 80 mL de agua destilada y agita con la varilla hasta que no quede ninguno.',
+  ver:'El azul aparece primero en el fondo, donde están los cristales, y se reparte al agitar.'},
+ {p:1,d:9,title:'Trasvasa al balón y enjuaga',draw:t=>sTransfer('cu',t),
+  text:()=>'Vierte la solución en el balón aforado de 250 mL usando el embudo. Enjuaga el vaso con el frasco lavador y agrega esa agua al balón.',
+  ver:'El enjuague sale azul claro: todavía arrastra soluto. Si se bota, la solución queda menos concentrada.'},
+ {p:1,d:9,title:'Completa hasta el aforo',draw:t=>sFill('cu',t),
+  text:()=>'Agrega agua destilada hasta cerca de la marca. Las últimas gotas van una por una, con los ojos a la altura del aforo.',
+  ver:'La parte baja del menisco debe tocar la línea. Si te pasas, no se corrige sacando líquido.'},
+ {p:1,d:9,title:'Tapa e invierte 10 veces',draw:t=>sInvert('cu',t),
+  text:()=>'Tapa el balón, sostén el tapón con el pulgar e inviértelo 10 veces para homogeneizar.',
+  ver:'Antes de mezclar, el fondo es más oscuro que el cuello. Al final el color es igual en todo el balón: 250 mL al 2 % p/V.'},
+ {p:2,d:7,title:'Pesa el cloruro de sodio',draw:t=>sWeigh('na',t),
+  text:hv('Con un vidrio de reloj limpio y la balanza en cero, pesa 4,38 g de NaCl.','Con un vidrio de reloj limpio y la balanza en cero, pesa la masa de NaCl que calculaste con la fórmula de molaridad.'),
+  ver:'Los cristales de NaCl son blancos y pequeños. La balanza se tara igual que antes.'},
+ {p:2,d:8,title:'Disuelve en el vaso',draw:t=>sDissolve('na',t),
+  text:()=>'Pasa la sal a un vaso con unos 80 mL de agua destilada y agita hasta que no se vea ningún cristal.',
+  ver:'La sal deja de verse, pero sigue ahí: la solución queda incolora.'},
+ {p:2,d:9,title:'Trasvasa al balón y enjuaga',draw:t=>sTransfer('na',t),
+  text:()=>'Vierte la solución en un balón aforado de 250 mL limpio, con el embudo. Enjuaga el vaso y agrega el enjuague al balón.',
+  ver:'El enjuague se ve transparente, pero lleva sal disuelta. También va al balón.'},
+ {p:2,d:9,title:'Completa hasta el aforo',draw:t=>sFill('na',t),
+  text:()=>'Completa con agua destilada hasta la marca de aforo, gota a gota al final.',
+  ver:'En una solución incolora el menisco cuesta más verlo: pon una hoja blanca detrás del cuello.'},
+ {p:2,d:9,title:'Tapa e invierte 10 veces',draw:t=>sInvert('na',t),
+  text:()=>'Tapa el balón e inviértelo 10 veces. Ya tienes 250 mL de NaCl 0,3 M.',
+  ver:'Aquí no hay color que avise si quedó bien mezclada. Por eso se cuentan las inversiones.'},
+ {p:3,d:9,title:'Guarda la solución concentrada',draw:s31,
+  text:()=>'Pasa toda la solución de sulfato de cobre al 2 % p/V a la botella 1, tápala y rotúlala.',
+  ver:'Un rótulo completo dice qué sustancia es, su concentración, la fecha y el grupo.'},
+ {p:3,d:8,title:'Mide la alícuota',draw:s32,
+  text:hv('Mide con la probeta 50 mL de la solución concentrada.','Mide con la probeta el volumen de solución concentrada que calculaste.'),
+  ver:'El volumen se lee en la parte baja del menisco, con la probeta apoyada en la mesa.'},
+ {p:3,d:13,title:'Diluye hasta 250 mL',draw:s33,
+  text:()=>'Pasa la alícuota al balón limpio, enjuaga la probeta hacia el balón, completa con agua hasta el aforo e invierte 10 veces.',
+  ver:'Al agregar agua la cantidad de soluto no cambia. Solo queda repartida en más volumen.'},
+ {p:3,d:10,title:'Guarda, rotula y compara',draw:s34,
+  text:()=>'Pasa la solución diluida a la botella 2 y rotúlala. Pon las dos botellas frente a una hoja blanca.',
+  ver:'Mismo soluto y botellas iguales, pero distinto color: 2 % p/V frente a 0,4 % p/V.'},
+ {p:4,d:10,title:'Separa 100 mL de la solución de NaCl',draw:s41,
+  text:()=>'Mide 100 mL de tu solución de NaCl 0,3 M con la probeta y pásalos al vaso de 250 mL.',
+  ver:'Esos 100 mL ya tienen sal disuelta y admiten mucha más: es una solución insaturada.'},
+ {p:4,d:9,title:'Primera adición: 10 g',draw:t=>sSat(0,t),text:()=>'Pesa 10 g de NaCl, agrégalos al vaso y agita.',ver:'Se disuelve todo. La solución sigue insaturada.'},
+ {p:4,d:9,title:'Segunda adición: 10 g más',draw:t=>sSat(1,t),text:()=>'Agrega otros 10 g y agita.',ver:'Vuelve a disolverse todo, aunque tarda más que la primera vez.'},
+ {p:4,d:10,title:'Tercera adición: 14 g más',draw:t=>sSat(2,t),text:()=>'Agrega 14 g más y agita con paciencia.',ver:'Se disuelve con dificultad. La solución llegó a su límite: está saturada.'},
+ {p:4,d:9,title:'Cuarta adición: 5 g más',draw:t=>sSat(3,t),text:()=>'Agrega 5 g más y agita.',ver:'Por más que agites, queda sal en el fondo. El agua ya no admite más soluto.'},
+ {p:4,d:9,title:'Quinta adición: 5 g más',draw:t=>sSat(4,t),text:()=>'Agrega otros 5 g y agita.',ver:'El sólido del fondo aumenta, pero la curva ya no sube: el líquido tiene la misma concentración.'},
+ {p:5,d:9,title:'Compara y analiza',draw:s5,
+  text:()=>'Observa las tres soluciones y responde las preguntas de análisis de tu guía.',
+  ver:'Concentrada o diluida dice cuánto soluto hay en cada mililitro. Saturada o insaturada dice si todavía cabe más. Son dos preguntas distintas.'}
+];
+const FIRST4=STEPS.findIndex(s=>s.p===4)+1;
+
+/* ---------- reproducción ---------- */
+const $=id=>document.getElementById(id);
+let idx=0,t=0,playing=false,speed=1,dirty=true,last=0,rows=-1;
+const HOLD=.7;
+function ui(){const s=STEPS[idx],inPart=STEPS.filter(x=>x.p===s.p),k=inPart.indexOf(s)+1;
+  $('where').textContent=`Parte ${s.p} · paso ${k} de ${inPart.length}`;
+  $('stitle').textContent=s.title;$('stext').textContent=s.text();$('sver').textContent=s.ver;
+  document.querySelectorAll('#tabs button').forEach(b=>b.setAttribute('aria-current',String(+b.dataset.p===s.p)));
+  $('playico').setAttribute('d',playing?'M5 3h4v14H5zM11 3h4v14h-4z':'M5 3l12 7-12 7z');
+  $('play').setAttribute('aria-label',playing?'Pausar':'Reproducir');
+  $('satwrap').hidden=s.p<4;rows=-1;table()}
+function table(){const n=clamp(idx-FIRST4+(t>.93?1:0),0,5);if(n===rows)return;rows=n;
+  $('sat').innerHTML=ADD.map((m,j)=>j<n
+    ?`<tr><td>${j+1} (+${m} g)</td><td>${CUM[j]} g</td><td>${DIS[j]?'Sí, todo':'No: quedan '+(CUM[j]-34)+' g'}</td><td>${EST[j]}</td></tr>`
+    :`<tr><td>${j+1} (+${m} g)</td><td>—</td><td>—</td><td>—</td></tr>`).join('')}
+function render(){base();ctx.clearRect(0,0,W,H);const s=STEPS[idx],tt=clamp(t);clk=tt*s.d;s.draw(tt);
+  if(playing)$('scrub').value=Math.round(tt*1000);table()}
+function go(i,keep){idx=clamp(i,0,STEPS.length-1);t=0;$('scrub').value=0;if(!keep)playing=playing&&true;ui();dirty=true}
+function frame(ts){
+  if(playing){const dt=Math.min(.05,(ts-last)/1000),s=STEPS[idx];t+=dt*speed/s.d;
+    if(t>=1+HOLD/s.d){if(idx<STEPS.length-1){idx++;t=0;ui()}else{t=1;playing=false;ui()}}
+    dirty=true}
+  last=ts;if(dirty){render();dirty=false}requestAnimationFrame(frame)}
+function resize(){const r=cv.getBoundingClientRect(),d=Math.min(2.5,window.devicePixelRatio||1);
+  const w=Math.max(200,Math.round(r.width*d));cv.width=w;cv.height=Math.round(w*H/W);S=w/W;dirty=true}
+$('play').onclick=()=>{if(!playing&&idx===STEPS.length-1&&t>=1){idx=0;t=0}playing=!playing;ui();dirty=true};
+$('prev').onclick=()=>go(t>.15?idx:idx-1);
+$('next').onclick=()=>go(idx+1);
+$('scrub').oninput=e=>{playing=false;t=e.target.value/1000;ui();dirty=true};
+$('speed').onclick=e=>{speed=speed===1?2:speed===2?.5:1;e.currentTarget.textContent=String(speed).replace('.',',')+'×'};
+$('hide').onchange=e=>{hide=e.target.checked;ui();dirty=true};
+$('tabs').onclick=e=>{const b=e.target.closest('button');if(b)go(STEPS.findIndex(s=>s.p===+b.dataset.p))};
+new ResizeObserver(resize).observe(cv);
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{dirty=true});
+resize();ui();requestAnimationFrame(frame);
+})();
+</script>
+<script>
+(()=>{
+const q=s=>document.querySelector(s),qa=s=>[...document.querySelectorAll(s)];
+const R=a=>()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296};
+const n2=v=>String(Number(v.toFixed(2))).replace('.',',');
+const svg=(w,h,s,l)=>`<svg viewBox="0 0 ${w} ${h}" role="img" aria-label="${l}">${s}</svg>`;
+const V=(x,y,w,h,lv,c,op)=>{const ly=y+h*(1-lv),b=`V${y+h-10}Q${x} ${y+h} ${x+10} ${y+h}H${x+w-10}Q${x+w} ${y+h} ${x+w} ${y+h-10}`;
+  return `<path class="lq ${c}" ${op!=null?`style="fill-opacity:${op}"`:''} d="M${x} ${ly}${b}V${ly}Z"/><path class="gl" d="M${x} ${y}${b}V${y}"/>`};
+const D=(n,x,y,w,h,sd,c,r=3)=>{const g=R(sd);let s='';for(let i=0;i<n;i++)s+=`<circle class="pt ${c}" cx="${(x+g()*w).toFixed(1)}" cy="${(y+g()*h).toFixed(1)}" r="${r}"/>`;return s};
+const P=(n,cx,by,w,sd,c)=>{const g=R(sd),hm=Math.min(w*.3,4+Math.sqrt(n)*2.4);let s='';
+  for(let i=0;i<n;i++){const u=g()-.5,v=g(),x=cx+u*w,y=by-4-v*hm*(1-4*u*u);s+=`<rect class="pt ${c}" x="${(x-3).toFixed(1)}" y="${(y-3).toFixed(1)}" width="6" height="6" rx="1" transform="rotate(${(g()*90)|0} ${x.toFixed(1)} ${y.toFixed(1)})"/>`}return s};
+const T=(x,y,s,a='middle',c='')=>`<text class="st ${c}" x="${x}" y="${y}" text-anchor="${a}">${s}</text>`;
+const fig=(id,s,cap)=>{q('#'+id).innerHTML=s+(cap?`<figcaption>${cap}</figcaption>`:'')};
+
+/* 1 · solución frente a mezcla heterogénea */
+{let z='';for(let i=0;i<5;i++)for(let j=0;j<5;j++){const dx=(i-2)*13,dy=(j-2)*13;if(dx*dx+dy*dy<784)z+=`<circle class="pt o" cx="${150+dx}" cy="${64+dy}" r="4"/>`}
+ fig('f1',svg(360,214,V(42,62,72,112,.82,'lq o')+`<path class="ln" d="M112 112L128 92"/><circle class="zo" cx="150" cy="64" r="36"/>`+z+T(78,200,'Solución')
+  +V(212,62,72,112,.82,'lq w')+`<ellipse class="pt sand" cx="248" cy="167" rx="30" ry="7"/>`+D(7,220,100,56,56,4,'sand',2.5)
+  +`<path class="ln" d="M282 112L298 92"/><circle class="zo" cx="318" cy="64" r="36"/>`+D(15,300,64,36,24,9,'sand',4)+T(248,200,'Mezcla heterogénea'),
+  'Ilustración: en una solución las partículas quedan repartidas de forma uniforme; en una mezcla heterogénea se acumulan y se ven.'),
+  'Con la lupa: reparto uniforme frente a partículas que se acumulan.')}
+
+/* 2 · soluto + solvente = solución */
+fig('f2',svg(360,200,P(30,58,150,64,3,'b')+T(58,182,'Soluto')+T(118,122,'+')+V(150,58,64,104,.74,'lq w')+T(182,182,'Solvente')+T(240,122,'=')
+  +V(266,58,64,104,.8,'lq b')+D(16,274,90,48,64,5,'b')+T(298,182,'Solución'),'Ilustración: soluto más solvente forman la solución.'),
+  'Poca cantidad de soluto, mucha de solvente.');
+
+/* 3 · insaturada, saturada, sobresaturada */
+fig('f3',svg(360,200,V(30,34,70,112,.8,'lq w')+D(6,38,66,54,72,2,'b')+T(65,170,'Insaturada')+T(65,190,'admite más','middle','m')
+  +V(145,34,70,112,.8,'lq w')+D(22,153,62,54,62,6,'b')+P(12,180,146,46,8,'b')+T(180,170,'Saturada')+T(180,190,'en su límite','middle','m')
+  +V(260,34,70,112,.8,'lq w')+D(40,268,62,54,76,11,'b')+T(295,170,'Sobresaturada')+T(295,190,'inestable','middle','m'),
+  'Ilustración: tres vasos con pocas partículas, con el máximo y con más del máximo disuelto.'),
+  'Mismo volumen de agua, distinta cantidad de soluto disuelto.');
+
+/* 4 · solubilidad del NaCl */
+let add=0;
+function sol4(){const dis=Math.min(add,36),ex=Math.max(0,add-36);
+  fig('f4',svg(360,204,V(110,22,140,150,.8,'lq w')+D(dis,120,62,120,ex?84:98,7,'k')+P(Math.round(ex*1.6),180,172,104,5,'k')+T(180,196,'100 g de agua a 20 °C'),
+   'Ilustración: vaso con 100 g de agua y la sal agregada.'));
+  q('#sOut').textContent=`Agregado: ${add} g · Disuelto: ${dis} g · Sin disolver: ${ex} g. `+(add<36?'Insaturada.':add===36?'Saturada.':'Saturada, con sal en el fondo.');
+  q('#sAdd').disabled=add>=60}
+q('#sAdd').onclick=()=>{add=Math.min(60,add+6);sol4()};q('#sClr').onclick=()=>{add=0;sol4()};sol4();
+
+/* 5 · curvas de solubilidad (g en 100 g de agua) */
+const SAL={KNO3:{n:'KNO₃',c:'c1',p:[[0,13.3],[10,20.9],[20,31.6],[30,45.8],[40,63.9],[50,85.5],[60,110],[70,138],[80,169]]},
+  KCl:{n:'KCl',c:'c2',p:[[0,28],[20,34],[40,40],[60,45.5],[80,51.1]]},NaCl:{n:'NaCl',c:'c3',p:[[0,35.7],[20,36],[40,36.6],[60,37.3],[80,38.4]]}};
+let salt='KNO3';
+const X=t=>50+t/80*280,Y=m=>215-m/180*190;
+function sAt(k,t){const p=SAL[k].p;for(let i=1;i<p.length;i++)if(t<=p[i][0]){const a=p[i-1],b=p[i];return a[1]+(b[1]-a[1])*(t-a[0])/(b[0]-a[0])}return p[p.length-1][1]}
+function chart(){const t=+q('#cT').value,m=+q('#cM').value,s=sAt(salt,t);let g='';
+  for(let v=0;v<=180;v+=30)g+=`<line class="gr" x1="50" x2="330" y1="${Y(v)}" y2="${Y(v)}"/>`;
+  for(let v=0;v<=180;v+=60)g+=T(42,Y(v)+4,v,'end','m');
+  for(let v=0;v<=80;v+=20)g+=`<line class="gr" y1="25" y2="215" x1="${X(v)}" x2="${X(v)}"/>`+T(X(v),234,v,'middle','m');
+  g+=`<path class="ax" d="M50 25V215H330"/>`+T(190,256,'Temperatura (°C)')+`<text class="st" transform="translate(14 120) rotate(-90)" text-anchor="middle">g de soluto en 100 g de agua</text>`;
+  for(const k in SAL)g+=`<polyline class="cv ${SAL[k].c}${k===salt?' on':''}" points="${SAL[k].p.map(p=>X(p[0])+','+Y(p[1]).toFixed(1)).join(' ')}"/>`;
+  g+=T(306,40,'KNO₃','end')+T(328,154,'KCl','end')+T(328,192,'NaCl','end');
+  g+=`<path class="ln" d="M${X(t)} 215V${Y(m)}H50"/><circle class="dot" cx="${X(t)}" cy="${Y(m)}" r="6"/>`;
+  fig('f5',svg(360,264,g,'Gráfica de solubilidad de KNO₃, KCl y NaCl entre 0 y 80 °C, con el punto elegido.'));
+  q('#cTo').textContent=t+' °C';q('#cMo').textContent=m+' g';
+  const d=m-s,S=n2(Math.round(s));
+  q('#cOut').textContent=`A ${t} °C se disuelven máximo ${S} g de ${SAL[salt].n}. `+(d<-1?`Insaturada: admite ${n2(Math.round(-d))} g más.`:d<=1?'Saturada: está en el límite.':`Saturada: sobran ${n2(Math.round(d))} g sin disolver.`);
+  qa('#salts button').forEach(b=>b.classList.toggle('on',b.dataset.s===salt))}
+q('#salts').onclick=e=>{const b=e.target.closest('button');if(b){salt=b.dataset.s;chart()}};q('#cT').oninput=chart;q('#cM').oninput=chart;chart();
+
+/* 6 · dilución, vasos a escala */
+function dil(){const c=+q('#dC').value,v=+q('#dV').value,w=+q('#dW').value,c2=c*v/w,g=c*v/100,n=Math.max(3,Math.min(48,Math.round(g*6)));
+  const op=k=>(.12+.8*(1-Math.exp(-k/3))).toFixed(2),lL=v/500*.95*110/50,lR=w/500*.95,hL=140*lL,hR=140*lR;
+  fig('f6',svg(360,210,V(50,24,50,140,lL,'lq b',op(c))+D(n,57,164-hL+5,36,Math.max(2,hL-11),3,'b',2.5)
+   +`<path class="ax" d="M116 92H196M186 84L196 92L186 100"/>`+T(156,80,'+ agua')
+   +V(215,24,110,140,lR,'lq b',op(c2))+D(n,223,164-hR+5,94,Math.max(2,hR-11),3,'b',2.5)
+   +T(75,186,`C₁ = ${n2(c)} %`)+T(75,204,`V₁ = ${v} mL`)+T(270,186,`C₂ = ${n2(c2)} %`)+T(270,204,`V₂ = ${w} mL`),
+   'Ilustración: la porción concentrada y la solución diluida, con el mismo número de partículas.'),'Cuenta las partículas: son las mismas antes y después.');
+  q('#dCo').textContent=n2(c)+' %';q('#dVo').textContent=v+' mL';q('#dWo').textContent=w+' mL';
+  q('#dOut').textContent=`${n2(c)} % × ${v} mL = ${n2(c2)} % × ${w} mL. Soluto en ambas: ${n2(g)} g.`}
+['dC','dV','dW'].forEach(i=>q('#'+i).oninput=dil);dil();
+
+/* 7 · una gota en 50 L */
+fig('f7',svg(360,140,`<path class="lq b" style="fill-opacity:.9" d="M70 34C70 34 50 64 50 78a20 20 0 0 0 40 0C90 64 70 34 70 34Z"/>`+T(70,128,'1 gota')
+  +`<path class="ax" d="M112 74H172M162 66L172 74L162 82"/>`+V(196,14,124,92,.86,'lq w')+T(258,128,'50 L de agua'),'Ilustración: una gota junto a un tanque de 50 litros.'),
+  'Una gota en 50 L de agua es más o menos 1 ppm.');
+
+/* preguntas */
+const QS=[
+{t:1,q:'Lina disuelve una cucharada de azúcar en un vaso de agua y agita bien. Con un pitillo prueba el líquido de arriba, del medio y del fondo. Si es una solución, ¿qué debe notar?',o:['Más dulce en el fondo del vaso','Igual de dulce en los tres niveles','Más dulce en la parte de arriba','Dulce solo donde cayó el azúcar'],a:1,x:'En una solución el soluto queda repartido de manera uniforme: cualquier porción tiene la misma composición.'},
+{t:1,q:'El agua de mar filtrada se ve tan transparente como el agua de la llave. ¿Qué evidencia mostraría que es una solución y no agua pura?',o:['Al filtrarla, la sal queda en el papel','Al dejarla quieta, la sal baja al fondo','Al evaporarla, queda un residuo de sal','Al mirarla de cerca, se ven los granos'],a:2,x:'Las partículas disueltas no se ven, no se asientan y atraviesan el filtro. Solo aparecen cuando se retira el solvente.'},
+{t:2,q:'El alcohol antiséptico de la droguería tiene 70 mL de etanol y 30 mL de agua en cada 100 mL. ¿Cuál es el solvente?',o:['El agua, porque siempre es el solvente','El etanol, porque es el que desinfecta','El agua, porque disuelve al etanol','El etanol, porque está en mayor cantidad'],a:3,x:'El solvente es el componente que está en mayor cantidad. El agua es el más común, pero no el único.'},
+{t:2,q:'Sara disuelve 5 g de sal en 100 mL de agua. Juan disuelve 5 g de sal en 250 mL de agua. ¿Qué es diferente entre las dos soluciones?',o:['La cantidad de solvente','La cantidad de soluto','La clase de soluto','La clase de solvente'],a:0,x:'Las dos tienen el mismo soluto y la misma masa de soluto. Cambia cuánta agua hay, y por eso la de Juan queda más diluida.'},
+{t:3,q:'A un vaso de limonada le agregas otra cucharada de azúcar, agitas y se disuelve toda. ¿Cómo estaba la limonada antes de esa cucharada?',o:['Saturada: estaba en su límite','Sobresaturada: tenía soluto de más','Insaturada: aún admitía soluto','Heterogénea: tenía dos fases'],a:2,x:'Si el azúcar nuevo se disolvió, todavía había espacio para más soluto.'},
+{t:3,q:'El agua de cal se satura con apenas 0,17 g de hidróxido de calcio en 100 mL. ¿Cómo se clasifica esa solución?',o:['Saturada y diluida','Saturada y concentrada','Insaturada y diluida','Insaturada y concentrada'],a:0,x:'Saturada dice que ya no cabe más soluto. Diluida dice que hay poco soluto por mililitro. Las dos cosas pueden pasar a la vez.'},
+{t:4,q:'A 20 °C se disuelven como máximo 36 g de NaCl en 100 g de agua. Marta agrega 20 g de sal a 50 g de agua y agita. ¿Qué observa?',o:['Se disuelven los 20 g de sal','Quedan 16 g de sal sin disolver','Se disuelven solo 2 g de sal','Quedan 2 g de sal sin disolver'],a:3,x:'En 50 g de agua cabe la mitad: 18 g. De los 20 g agregados sobran 2 g.'},
+{t:4,q:'Una gaseosa tibia bota mucho más gas al destaparla que una fría. ¿Qué indica eso sobre la solubilidad del CO₂ en agua?',o:['Aumenta cuando sube la temperatura','Disminuye cuando sube la temperatura','No cambia con la temperatura','Depende solo del azúcar disuelto'],a:1,x:'Los gases se disuelven menos en caliente. Con la mayoría de los sólidos pasa lo contrario.'},
+{t:5,q:'A 40 °C se disuelven 64 g de KNO₃ en 100 g de agua, y a 20 °C solo 32 g. Si enfrías de 40 °C a 20 °C una solución saturada hecha con 100 g de agua, ¿qué ocurre?',o:['Cristalizan unos 64 g de KNO₃','Se disuelven 32 g más de KNO₃','Cristalizan unos 32 g de KNO₃','La solución queda insaturada'],a:2,x:'A 20 °C solo caben 32 g disueltos. Los otros 32 g salen de la solución como cristales.'},
+{t:5,q:'Según la curva, a 60 °C se disuelven unos 45 g de KCl en 100 g de agua. Una solución tiene 30 g de KCl en 100 g de agua a 60 °C. ¿Cuánto KCl más admite antes de saturarse?',o:['15 g','30 g','45 g','75 g'],a:0,x:'El punto está 15 g por debajo de la curva: 45 g − 30 g = 15 g.'},
+{t:6,q:'De un jugo concentrado al 40 % tomas 100 mL y completas con agua hasta 400 mL. ¿Qué concentración tiene el jugo preparado?',o:['30 %','16 %','4 %','10 %'],a:3,x:'El volumen quedó 4 veces mayor, así que la concentración queda 4 veces menor: 40 % ÷ 4 = 10 %.'},
+{t:6,q:'Un tinto quedó muy cargado y le agregas agua caliente. ¿Qué se mantiene igual después de diluirlo?',o:['La concentración del café','La cantidad de café disuelto','El volumen de la bebida','La cantidad de solvente'],a:1,x:'Al diluir solo se agrega solvente. El soluto es el mismo, repartido en más volumen.'},
+{t:6,q:'Necesitas 500 mL de blanqueador al 1 % y tienes uno al 5 %. ¿Qué volumen del concentrado debes medir antes de completar con agua?',o:['25 mL','50 mL','100 mL','250 mL'],a:2,x:'C₁·V₁ = C₂·V₂: 5 % × V₁ = 1 % × 500 mL, entonces V₁ = 100 mL.'},
+{t:7,q:'El suero fisiológico es una solución de NaCl al 0,9 % p/V. ¿Cuánta sal hay disuelta en una bolsa de 500 mL?',o:['0,45 g','4,5 g','9 g','45 g'],a:1,x:'0,9 g en cada 100 mL. En 500 mL hay 5 veces más: 4,5 g.'},
+{t:7,q:'El frasco A tiene 1 L de solución 0,5 M. El frasco B tiene 250 mL de solución 1 M del mismo soluto. ¿Cuál contiene más moles de soluto?',o:['El B, porque tiene 1,00 mol','El B, porque es más concentrado','El A, porque tiene 0,50 mol','Ninguno: tienen los mismos moles'],a:2,x:'moles = M × V. A: 0,5 × 1 = 0,50 mol. B: 1 × 0,25 = 0,25 mol. Más concentrada no significa más soluto.'},
+{t:7,q:'El agua potable puede tener hasta 2 ppm de cloro, es decir, 2 mg por litro. ¿Cuánto cloro puede haber como máximo en un tanque de 500 L?',o:['1 g','4 mg','250 mg','2 g'],a:0,x:'2 mg × 500 = 1000 mg, que es 1 g.'}];
+let score=0,done=0;
+const upd=()=>{q('#score').textContent=`Aciertos: ${score} de ${QS.length} · Respondidas: ${done}`};
+function quiz(){score=done=0;qa('.quiz').forEach(e=>e.innerHTML='');
+  QS.forEach(k=>{const d=document.createElement('div');d.className='q';
+    d.innerHTML=`<p class="eyebrow">Practica</p><p>${k.q}</p><div class="opts">${k.o.map((o,j)=>`<button data-j="${j}"><b>${'ABCD'[j]}.</b><span>${o}</span></button>`).join('')}</div><div class="fb" hidden></div>`;
+    d.querySelector('.opts').onclick=e=>{const b=e.target.closest('button');if(!b||b.disabled)return;const j=+b.dataset.j,ok=j===k.a;
+      d.querySelectorAll('.opts button').forEach((x,i)=>{x.disabled=true;if(i===k.a)x.classList.add('ok');else if(i===j)x.classList.add('bad')});
+      const fb=d.querySelector('.fb');fb.hidden=false;fb.innerHTML=`<b class="${ok?'ok':'bad'}">${ok?'✓ Correcto.':'✗ La respuesta es la '+'ABCD'[k.a]+'.'}</b> ${k.x}`;
+      score+=ok?1:0;done++;upd()};
+    q(`.quiz[data-t="${k.t}"]`).appendChild(d)});upd()}
+q('#again').onclick=quiz;quiz();
+q('#ctabs').onclick=e=>{const b=e.target.closest('button');if(b)q('#t'+b.dataset.t).scrollIntoView({behavior:'smooth',block:'start'})};
+
+/* secciones */
+function mode(m,setHash){q('#lab').hidden=m!=='lab';q('#con').hidden=m!=='con';
+  qa('#mode button').forEach(b=>b.setAttribute('aria-current',String(b.dataset.m===m)));
+  if(m==='con'&&q('#play').getAttribute('aria-label')==='Pausar')q('#play').click();
+  if(setHash)try{location.hash=m==='con'?'conceptos':'laboratorio'}catch(e){}}
+q('#mode').onclick=e=>{const b=e.target.closest('button');if(b)mode(b.dataset.m,true)};
+const fromHash=()=>mode(location.hash==='#conceptos'?'con':'lab',false);
+window.addEventListener('hashchange',fromHash);fromHash();
+})();
+</script>
+</body>
+</html>
