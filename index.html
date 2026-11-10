@@ -80,6 +80,24 @@ footer{flex-direction:column;flex-wrap:nowrap;justify-content:flex-start;gap:14p
 ol.steps,.tx ul{margin:0;padding-left:1.2rem;display:flex;flex-direction:column;gap:6px;max-width:62ch}
 .ev{color:var(--muted);font-size:.84rem}
 .ctl select{font:inherit;padding:.5rem .6rem;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink);grid-column:1/-1}
+.mats{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr));gap:10px}
+.mat{display:flex;gap:10px;border:1px solid var(--line);border-radius:10px;padding:10px;font-size:.88rem;min-width:0}
+.mat svg{flex:0 0 64px;width:64px;height:64px;background:var(--fig);border-radius:8px}
+.mat p{margin:2px 0 0}.mat .no{color:var(--muted)}
+.pick{display:grid;grid-template-columns:repeat(auto-fill,minmax(72px,1fr));gap:8px}
+.pick button{background:var(--fig);border:1px solid var(--line);border-radius:10px;padding:4px;cursor:pointer}
+.pick button svg{display:block;width:100%;height:auto}
+.pick button.bad{border-color:var(--bad);box-shadow:inset 0 0 0 2px var(--bad)}
+.chk{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px;font-size:.9rem}
+.chk li::before{content:"○ ";color:var(--muted)}.chk li.dn{color:var(--ok)}.chk li.dn::before{content:"✓ ";color:var(--ok)}
+.out.err{color:var(--bad)}.out.good{color:var(--ok)}
+.lcd{fill:#86f7b4;font:700 18px ui-monospace,Menlo,Consolas,monospace}
+.goal{font-family:var(--display);font-weight:700}
+.task{margin:0;max-width:70ch}
+.sub{font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;font-weight:700;color:var(--muted);margin:0}
+ul.dl{margin:0;padding-left:1.2rem;display:flex;flex-direction:column;gap:6px;max-width:70ch;font-size:.92rem}
+.ans{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.ans input{font:inherit;padding:.5rem .6rem;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink);width:8em}
 /* ---- Conceptos ---- */
 :root{--glass:#6f8794;--water:#bfe0f2;--c1:#1667c9;--c2:#e07a12;--c3:#0f9d8a;--salt:#5d7684;--sand:#b08a4e;--ok:#1a7f4b;--bad:#b3372e;--fig:#eaf1f5}
 @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){--glass:#8fa7b3;--water:#27506a;--c1:#62adf7;--c2:#f0a94a;--c3:#4fd1bd;--salt:#c9d6dd;--sand:#c9a56a;--ok:#5fd39a;--bad:#ff8f85;--fig:#101a21} }
@@ -87,7 +105,7 @@ ol.steps,.tx ul{margin:0;padding-left:1.2rem;display:flex;flex-direction:column;
 .mode{display:flex;gap:4px;background:var(--chip);padding:4px;border-radius:12px;align-self:flex-start}
 .mode button{white-space:nowrap;font:600 .95rem var(--body);padding:.55rem .8rem;border-radius:9px;border:0;background:transparent;color:var(--muted);cursor:pointer}
 .mode button[aria-current="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.14)}
-#lab,#con,#pro{display:flex;flex-direction:column;gap:16px}
+#lab,#con,#pro,#pri{display:flex;flex-direction:column;gap:16px}
 .score{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;justify-content:space-between;font-weight:600;font-variant-numeric:tabular-nums}
 .btn{font:600 .88rem var(--body);padding:.5rem .8rem;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
 .btn:disabled{color:var(--muted);cursor:default}
@@ -152,6 +170,7 @@ ol.steps,.tx ul{margin:0;padding-left:1.2rem;display:flex;flex-direction:column;
 
   <nav class="mode" id="mode" aria-label="Secciones">
     <button data-m="lab" aria-current="true">Laboratorio</button>
+    <button data-m="pri" aria-current="false">Principiantes</button>
     <button data-m="con" aria-current="false">Conceptos</button>
     <button data-m="pro" aria-current="false">Profundización</button>
   </nav>
@@ -193,6 +212,172 @@ ol.steps,.tx ul{margin:0;padding-left:1.2rem;display:flex;flex-direction:column;
     </section>
   </div>
 
+  </div>
+
+  <div id="pri" hidden>
+    <nav class="tabs" id="ptabs" aria-label="Tareas básicas">
+      <button data-t="s0">Materiales</button><button data-t="sA">Balanza</button><button data-t="sB">Balón aforado</button><button data-t="sC">Probeta</button><button data-t="sD">Pipeta</button><button data-t="sE">Reactivos sólidos</button><button data-t="sF">Cálculos</button>
+    </nav>
+
+    <article class="topic" id="s0">
+      <h2>Conoce los materiales</h2>
+      <p class="task">Antes de usar un material hay que saber cómo se llama y para qué sirve. Lee cada tarjeta y luego haz el reto.</p>
+      <div class="mats" id="mats"></div>
+      <p class="sub">Reto: ¿cuál es?</p>
+      <p class="out" id="gQ"></p>
+      <div class="pick" id="gPick"></div>
+      <p class="out" id="gMsg" aria-live="polite"></p>
+      <div class="score"><span id="gN"></span><button class="btn" id="gAgain">Reiniciar reto</button></div>
+    </article>
+
+    <article class="topic" id="sA">
+      <h2>Pesar un sólido en la balanza digital</h2>
+      <p class="task">Tu tarea: pesar <span class="goal">3,00 g</span> de reactivo. Toca los botones en el orden que usarías en el laboratorio.</p>
+      <div class="tb">
+        <figure class="ill" id="fa"></figure>
+        <div class="tx">
+          <ol class="chk" id="aChk"></ol>
+          <div class="seg" id="aBtns"><button class="btn" data-a="on">Encender</button><button class="btn" data-a="gl">Poner vidrio de reloj</button><button class="btn" data-a="tara">TARA</button><button class="btn" data-a="big">Agregar con espátula</button><button class="btn" data-a="small">Agregar con golpecitos</button><button class="btn" data-a="out">Retirar un poco</button><button class="btn" data-a="rst">Reiniciar</button></div>
+          <p class="out" id="aMsg" aria-live="polite"></p>
+        </div>
+      </div>
+      <p class="sub">Detalles que importan</p>
+      <ul class="dl">
+        <li>La balanza va sobre una mesa firme y nivelada, lejos del ventilador y de corrientes de aire.</li>
+        <li>El platillo debe estar limpio y seco antes de empezar.</li>
+        <li>El vidrio de reloj va en el centro del platillo, no en el borde.</li>
+        <li>TARA no borra la masa del vidrio: la descuenta. Por eso se presiona con el vidrio puesto y vacío.</li>
+        <li>No te apoyes en la mesa ni toques la balanza mientras lees. Espera a que el número deje de cambiar.</li>
+        <li>La coma separa los decimales: 3,00 g no es 300 g. Anota la masa con todos sus decimales y la unidad.</li>
+        <li>No se pesan objetos calientes ni mojados.</li>
+        <li>Al terminar, limpia cualquier grano que haya caído y apaga la balanza.</li>
+      </ul>
+    </article>
+
+    <article class="topic" id="sB">
+      <h2>Usar el balón aforado</h2>
+      <p class="task">Tu tarea: completar <span class="goal">250 mL</span> de solución. El círculo muestra el cuello ampliado, tal como lo ves según dónde pongas los ojos.</p>
+      <div class="tb">
+        <figure class="ill" id="fb"></figure>
+        <div class="tx">
+          <ol class="chk" id="bChk"></ol>
+          <div class="seg" id="bBtns"><button class="btn" data-a="pour">Pasar la solución del vaso</button><button class="btn" data-a="rinse">Enjuagar el vaso y agregar</button><button class="btn" data-a="jet">Agua en chorro (+20 mL)</button><button class="btn" data-a="jet5">Chorro corto (+5 mL)</button><button class="btn" data-a="swirl">Agitar en círculos</button><button class="btn" data-a="drop">Agua gota a gota</button><button class="btn" data-a="chk">Comprobar aforo</button><button class="btn" data-a="inv">Tapar e invertir</button><button class="btn" data-a="rst">Reiniciar</button></div>
+          <div class="seg" id="bEye"><button class="btn" data-e="1">Ojos arriba</button><button class="btn" data-e="0">Ojos a nivel</button><button class="btn" data-e="-1">Ojos abajo</button></div>
+          <p class="out" id="bMsg" aria-live="polite"></p>
+        </div>
+      </div>
+      <p class="sub">Detalles que importan</p>
+      <ul class="dl">
+        <li>El aforo es la línea delgada que rodea el cuello. Marca un solo volumen: el que dice el balón. No sirve para medir otros.</li>
+        <li>El sólido no se echa directo al balón. Primero se disuelve en un vaso con poca agua y luego se pasa.</li>
+        <li>El vaso, la varilla y el embudo se enjuagan y ese enjuague también va al balón: todavía llevan soluto.</li>
+        <li>El menísco es la curva que forma el líquido. Se lee la parte más baja de la curva, que debe tocar el aforo.</li>
+        <li>Si ves el aforo como un óvalo, tus ojos no están a su altura. A nivel se ve como una sola línea.</li>
+        <li>Si te pasas del aforo no se arregla sacando líquido: hay que preparar la solución otra vez.</li>
+        <li>El balón no se calienta ni recibe líquidos calientes: el vidrio se dilata y el volumen cambia.</li>
+        <li>Al invertir, sostén el tapón con el pulgar. Al final pasa la solución a una botella rotulada.</li>
+      </ul>
+    </article>
+
+    <article class="topic" id="sC">
+      <h2>Medir con precisión un volumen de líquido</h2>
+      <p class="task">Tu tarea: medir <span class="goal" id="cGoal"></span> de agua. Primero elige el instrumento.</p>
+      <div class="tb">
+        <figure class="ill" id="fc"></figure>
+        <div class="tx">
+          <ol class="chk" id="cChk"></ol>
+          <div class="seg" id="cInst"><button class="btn" data-i="vaso">Vaso de 100 mL</button><button class="btn" data-i="p100">Probeta de 100 mL</button><button class="btn" data-i="p25">Probeta de 25 mL</button></div>
+          <div class="seg" id="cBtns"><button class="btn" data-a="p5">Verter (+5 mL)</button><button class="btn" data-a="p1">Verter poco (+1 mL)</button><button class="btn" data-a="d">Gotero (+0,2 mL)</button><button class="btn" data-a="m">Retirar con gotero (−0,5 mL)</button><button class="btn" data-a="chk">Comprobar</button><button class="btn" data-a="rst">Otro volumen</button></div>
+          <div class="seg" id="cEye"><button class="btn" data-e="1">Ojos arriba</button><button class="btn" data-e="0">Ojos a nivel</button><button class="btn" data-e="-1">Ojos abajo</button></div>
+          <p class="out" id="cMsg" aria-live="polite"></p>
+        </div>
+      </div>
+      <p class="sub">Detalles que importan</p>
+      <ul class="dl">
+        <li>Elige el instrumento más pequeño en el que quepa todo el volumen de una sola vez.</li>
+        <li>Antes de medir, averigua cuánto vale cada rayita: resta dos números seguidos de la escala y divide entre las rayitas que hay entre ellos.</li>
+        <li>La probeta se lee apoyada en la mesa, nunca sostenida en la mano.</li>
+        <li>Se lee la parte baja del menisco, con los ojos a su misma altura. Desde arriba se lee de más y desde abajo, de menos.</li>
+        <li>Vierte despacio por la pared y completa las últimas gotas con gotero.</li>
+        <li>Las marcas del vaso de precipitado son aproximadas: sirven para estimar, no para medir.</li>
+        <li>Anota el volumen con su unidad: 48 mL, no solo 48.</li>
+      </ul>
+    </article>
+
+    <article class="topic" id="sD">
+      <h2>Usar la pipeta graduada</h2>
+      <p class="task">Tu tarea: entregar <span class="goal">6,00 mL</span> de solución. La escala de la pipeta empieza en 0 arriba y crece hacia abajo.</p>
+      <div class="tb">
+        <figure class="ill" id="fd"></figure>
+        <div class="tx">
+          <ol class="chk" id="dChk"></ol>
+          <div class="seg" id="dBtns"><button class="btn" data-a="bulb">Colocar el pipeteador</button><button class="btn" data-a="tip">Sumergir o sacar la punta</button><button class="btn" data-a="up">Aspirar</button><button class="btn" data-a="dn">Soltar (0,5 mL)</button><button class="btn" data-a="dr">Soltar gota a gota</button><button class="btn" data-a="set">Fijar lectura inicial</button><button class="btn" data-a="chk">Comprobar entrega</button><button class="btn" data-a="emp">Vaciar</button><button class="btn" data-a="rst">Reiniciar</button></div>
+          <p class="out" id="dMsg" aria-live="polite"></p>
+        </div>
+      </div>
+      <p class="sub">Detalles que importan</p>
+      <ul class="dl">
+        <li>Nunca se aspira con la boca. Siempre con pipeteador.</li>
+        <li>La punta debe estar bien sumergida, sin tocar el fondo. Si queda cerca de la superficie, entra aire.</li>
+        <li>Se aspira hasta pasar un poco por encima del 0 y luego se baja gota a gota hasta que el menisco toque el 0.</li>
+        <li>El volumen entregado es la lectura final menos la lectura inicial. Si empiezas en 0,00 y terminas en 6,00, entregaste 6,00 mL.</li>
+        <li>Mantén la pipeta vertical y lee con los ojos a la altura del menisco.</li>
+        <li>Antes de entregar, limpia la punta por fuera con papel sin tocar la abertura.</li>
+        <li>Al entregar, apoya la punta en la pared interna del recipiente y deja salir el líquido sin soplar.</li>
+        <li>No acuestes ni voltees la pipeta con líquido: llega al pipeteador y lo daña.</li>
+        <li>Lo que sobra no se devuelve al frasco.</li>
+      </ul>
+    </article>
+
+    <article class="topic" id="sE">
+      <h2>Manipular reactivos sólidos</h2>
+      <p class="task">Todo empieza por leer la etiqueta. Después decide qué harías en cada situación.</p>
+      <div class="tb">
+        <figure class="ill" id="fe"></figure>
+        <div class="tx">
+          <p class="sub" id="eN"></p>
+          <p class="out" id="eQ"></p>
+          <div class="opts" id="eOpts"></div>
+          <div class="fb" id="eFb" hidden></div>
+          <div><button class="btn on" id="eNext" hidden>Siguiente situación</button></div>
+        </div>
+      </div>
+      <p class="sub">Detalles que importan</p>
+      <ul class="dl">
+        <li>La etiqueta dice el nombre, la fórmula y los peligros. Dos frascos con polvo blanco pueden ser sustancias muy distintas.</li>
+        <li>Bata cerrada, gafas, guantes, cabello recogido y zapatos cerrados durante toda la práctica.</li>
+        <li>En el laboratorio no se come ni se bebe, y los reactivos no se tocan, no se huelen de cerca y no se prueban.</li>
+        <li>La tapa del frasco se deja boca arriba y el frasco se cierra apenas terminas.</li>
+        <li>Saca poco: es más fácil agregar que devolver, y lo que sobra no vuelve al frasco.</li>
+        <li>Las soluciones y residuos de cobre van al recipiente rotulado, no al desagüe.</li>
+        <li>Si algo se riega o te cae encima, avisa de inmediato al docente. Lávate las manos al terminar.</li>
+      </ul>
+    </article>
+
+    <article class="topic" id="sF">
+      <h2>Calcular cuánto pesar o medir</h2>
+      <p class="task">Antes de tocar el material hay que saber qué cantidad se necesita. Resuelve, pide pistas si las necesitas y comprueba.</p>
+      <div class="seg" id="fType"><button class="btn" data-t="pv">% p/V: ¿cuántos gramos?</button><button class="btn" data-t="mol">Molaridad: ¿cuántos gramos?</button><button class="btn" data-t="dil">Dilución: ¿cuántos mL?</button></div>
+      <div class="tb">
+        <figure class="ill" id="ff"></figure>
+        <div class="tx">
+          <p class="out" id="fQ"></p>
+          <div class="ans"><label for="fIn">Tu respuesta</label><input id="fIn" type="text" inputmode="decimal" autocomplete="off"><span id="fU"></span></div>
+          <div class="seg"><button class="btn on" id="fChk">Comprobar</button><button class="btn" id="fHint">Dame una pista</button><button class="btn" id="fNew">Otro ejercicio</button></div>
+          <ol class="steps" id="fHints"></ol>
+          <p class="out" id="fMsg" aria-live="polite"></p>
+        </div>
+      </div>
+      <p class="sub">Detalles que importan</p>
+      <ul class="dl">
+        <li>Lee qué te piden: una masa para pesar en gramos o un volumen para medir en mililitros.</li>
+        <li>El volumen siempre es el de la solución completa, no el del agua que agregas.</li>
+        <li>En molaridad el volumen va en litros: 250 mL son 0,250 L.</li>
+        <li>% p/V dice cuántos gramos hay en cada 100 mL. Molaridad dice cuántos moles hay en cada litro.</li>
+        <li>Razona primero con proporciones y usa la fórmula para comprobar.</li>
+        <li>Pregúntate si el resultado tiene sentido: para 250 mL de una solución diluida no vas a pesar 500 g.</li>
+      </ul>
+    </article>
   </div>
 
   <div id="con" hidden>
@@ -998,6 +1183,213 @@ PQ.forEach((k,n)=>{const d=document.createElement('div');d.className='q';
     const fb=d.querySelector('.fb');fb.hidden=false;fb.innerHTML=`<b class="${ok?'ok':'bad'}">${ok?'✓ Correcto.':'✗ La respuesta es la '+'ABCD'[k.a]+'.'}</b> ${k.x}<br><span class="ev">Evidencia Saber 11.°: ${k.ev}</span>`};
   q('#pq').appendChild(d)});
 
+/* ---- Principiantes ---- */
+const rnd=(a,b)=>a+Math.random()*(b-a),g2=v=>v.toFixed(2).replace('.',','),g1=v=>v.toFixed(1).replace('.',','),pickR=a=>a[Math.random()*a.length|0];
+const say=(id,t,ok)=>{const e=q('#'+id);e.textContent=t;e.className='out'+(ok===true?' good':ok===false?' err':'')};
+const stepsL=(id,L,dn)=>{q('#'+id).innerHTML=L.map((s,i)=>`<li class="${dn[i]?'dn':''}">${s}</li>`).join('')};
+const eyeShow=(id,v)=>qa('#'+id+' button').forEach(b=>b.classList.toggle('on',+b.dataset.e===v));
+q('#ptabs').onclick=e=>{const b=e.target.closest('button');if(b)q('#'+b.dataset.t).scrollIntoView({behavior:'smooth',block:'start'})};
+
+/* materiales */
+const MAT=[
+['balon','Balón aforado','También se llama matraz aforado. Prepara un volumen exacto de solución: el que marca la línea del cuello.','No mide otros volúmenes, no se calienta y no es para guardar soluciones.',`<path class="gl" d="M44 8V44C44 58 22 62 22 78a14 12 0 0 0 14 12H64a14 12 0 0 0 14-12C78 62 56 58 56 44V8"/><path class="ax" d="M44 22H56"/>`],
+['vaso','Vaso de precipitado','También se llama beaker. Sirve para disolver, mezclar y pasar líquidos.','Sus marcas son aproximadas: no sirve para medir con precisión.',V(26,24,48,64,.45,'lq w')+`<path class="ax" d="M58 40H68M62 52H68M58 64H68"/>`],
+['probeta','Probeta','Cilindro alto con escala. Mide volúmenes de líquido, por ejemplo 50 mL.','No sirve para preparar ni guardar soluciones, ni para calentar.',V(40,8,20,80,.55,'lq w')+`<path class="gl" d="M28 90H72"/><path class="ax" d="M52 20H60M52 32H60M52 44H60M52 56H60M52 68H60"/>`],
+['pipeta','Pipeta graduada','Tubo delgado con escala. Mide y entrega volúmenes pequeños con precisión, por ejemplo 6,0 mL.','Nunca se aspira con la boca: siempre con pipeteador.',`<path class="gl" d="M46 6V76L50 94L54 76V6"/><path class="ax" d="M38 18H46M38 28H46M38 38H46M38 48H46M38 58H46M38 68H46"/>`],
+['pera','Pipeteador','También le dicen pera o propipeta. Se pone en la boca de la pipeta para subir y soltar el líquido.','No dejes que el líquido suba hasta él: se daña.',`<path class="gl" d="M50 56V92M50 14V6"/><ellipse class="pt o" cx="50" cy="36" rx="20" ry="22"/>`],
+['vidrio','Vidrio de reloj','Platillo de vidrio curvo. Sobre él se pone el sólido para pesarlo.','Nada se pesa directamente sobre el platillo de la balanza.',`<path class="gl" d="M14 44Q50 74 86 44"/>`+P(10,50,58,30,4,'b')],
+['espatula','Espátula','Saca el sólido del frasco y lo lleva al vidrio de reloj.','Debe estar limpia y seca. No uses la misma para dos reactivos.',`<path class="gl" d="M22 86L68 34"/><path class="gl" style="stroke-width:8" d="M68 34L82 18"/>`],
+['varilla','Varilla de agitación','También se llama agitador de vidrio. Mezcla y ayuda a disolver dentro del vaso.','No golpees el fondo del vaso: es vidrio contra vidrio.',`<path class="gl" style="stroke-width:5" d="M22 88L78 12"/>`],
+['embudo','Embudo','Ayuda a pasar líquidos a recipientes de boca angosta, como el balón.','Levántalo un poco al verter para que salga el aire.',`<path class="gl" d="M16 16H84L56 52V90H44V52Z"/>`],
+['lavador','Frasco lavador','Botella plástica con agua destilada. Al apretarla sale un chorro fino para enjuagar y completar volúmenes.','Solo lleva agua destilada. No toques otras soluciones con la punta.',`<path class="lq w" d="M36 60H64V88H36Z"/><path class="gl" d="M34 40Q34 34 42 32H58Q66 34 66 40V90H34Z"/><path class="gl" d="M50 32V14L22 22"/>`],
+['balanza','Balanza digital','Mide la masa en gramos. La tecla TARA pone la pantalla en cero.','No recibe reactivo directamente, ni objetos calientes o mojados.',`<rect class="zo" x="14" y="56" width="72" height="30" rx="5"/><rect x="26" y="64" width="48" height="14" rx="2" fill="#10261c"/><path class="gl" d="M50 50V56"/><ellipse class="zo" cx="50" cy="46" rx="34" ry="5"/>`],
+['gotero','Gotero','Agrega o retira líquido gota a gota, para llegar justo a una marca.','No mide volúmenes: solo ayuda a ajustar.',`<path class="gl" d="M44 30V70L50 92L56 70V30Z"/><ellipse class="pt o" cx="50" cy="20" rx="9" ry="12"/>`]];
+q('#mats').innerHTML=MAT.map(m=>`<div class="mat"><svg viewBox="0 0 100 100" role="img" aria-label="${m[1]}">${m[4]}</svg><div><b>${m[1]}</b><p>${m[2]}</p><p class="no">${m[3]}</p></div></div>`).join('');
+const NM=Object.fromEntries(MAT.map(m=>[m[0],m[1]]));
+const USE=[['Necesito preparar exactamente 250 mL de solución.','balon'],['Voy a pesar un sólido: ¿sobre qué lo pongo?','vidrio'],['Necesito medir 50 mL de agua.','probeta'],['Necesito medir 6,0 mL de una solución.','pipeta'],['Necesito disolver un sólido en un poco de agua.','vaso'],['Necesito enjuagar un vaso con agua destilada.','lavador'],['Necesito sacar un sólido del frasco.','espatula'],['Necesito subir el líquido por la pipeta sin usar la boca.','pera'],['Necesito pasar un líquido al balón sin derramar.','embudo'],['Necesito agregar las últimas gotas para llegar al aforo.','gotero'],['Necesito agitar la mezcla dentro del vaso.','varilla'],['Necesito saber la masa de una sustancia.','balanza']];
+let gq=[],gi=0,gs=0,gFirst=true;
+function gShow(){q('#gQ').textContent=gi<gq.length?gq[gi][0]:'Terminaste el reto.';q('#gN').textContent=`Pregunta ${Math.min(gi+1,gq.length)} de ${gq.length} · Aciertos al primer intento: ${gs}`}
+function gNew(){gq=[...MAT.map(m=>['Toca: '+m[1].toLowerCase()+'.',m[0]]),...USE].sort(()=>Math.random()-.5);gi=0;gs=0;gFirst=true;
+  q('#gPick').innerHTML=[...MAT].sort(()=>Math.random()-.5).map(m=>`<button data-k="${m[0]}" aria-label="Material"><svg viewBox="0 0 100 100">${m[4]}</svg></button>`).join('');say('gMsg','');gShow()}
+q('#gPick').onclick=e=>{const b=e.target.closest('button');if(!b||gi>=gq.length)return;qa('#gPick button').forEach(x=>x.classList.remove('bad'));
+  if(b.dataset.k===gq[gi][1]){if(gFirst)gs++;gFirst=true;gi++;say('gMsg','Correcto: '+NM[b.dataset.k].toLowerCase()+'.',true);gShow()}
+  else{gFirst=false;b.classList.add('bad');say('gMsg','Ese es: '+NM[b.dataset.k].toLowerCase()+'. Intenta de nuevo.',false)}};
+q('#gAgain').onclick=gNew;gNew();
+
+/* A · balanza */
+const BAL={};
+function balDraw(){const read=(BAL.gl?23.41:0)+BAL.m-BAL.off;
+  fig('fa',svg(360,220,`<rect class="zo" x="80" y="150" width="200" height="56" rx="10"/><rect x="118" y="164" width="124" height="30" rx="4" fill="#10261c"/>`
+   +(BAL.on?`<text class="lcd" x="232" y="186" text-anchor="end">${g2(read)} g</text>`:'')+`<path class="gl" d="M180 142V150"/><ellipse class="zo" cx="180" cy="136" rx="84" ry="8"/>`
+   +(BAL.gl?`<path class="gl" d="M132 116Q180 144 228 116"/>`+P(Math.round(BAL.m*10),180,131,60,7,'b'):''),'Balanza digital con su lectura actual.'),BAL.on?'La pantalla muestra la lectura en gramos.':'Balanza apagada.');
+  const ok=BAL.on&&BAL.gl&&BAL.tOK&&Math.abs(BAL.m-3)<=.02;
+  stepsL('aChk',['Encender y esperar 0,00 g','Poner el vidrio de reloj en el centro','Presionar TARA: vuelve a 0,00 g','Agregar reactivo poco a poco','Llegar a 3,00 g (± 0,02 g)'],[BAL.on,BAL.gl,BAL.tOK,BAL.tOK&&BAL.m>0,ok]);
+  if(ok)say('aMsg','Lo lograste: 3,00 g de reactivo. Anota la masa con sus dos decimales y la unidad, tapa el frasco y limpia la balanza.',true)}
+function balReset(){Object.assign(BAL,{on:false,gl:false,off:0,m:0,tOK:false});say('aMsg','Empieza encendiendo la balanza.');balDraw()}
+q('#aBtns').onclick=e=>{const b=e.target.closest('button');if(!b)return;const a=b.dataset.a;
+  if(a==='rst')return balReset();
+  if(a==='on'){BAL.on=true;say('aMsg','Encendida. Espera a que marque 0,00 g y revisa que el platillo esté limpio y seco.')}
+  else if(!BAL.on)say('aMsg','La balanza está apagada. Enciéndela primero.',false);
+  else if(a==='gl'){if(BAL.gl)say('aMsg','El vidrio de reloj ya está puesto.');else{BAL.gl=true;say('aMsg','El vidrio de reloj pesa 23,41 g. Ese número no es tu reactivo: descúéntalo con TARA.')}}
+  else if(a==='tara'){BAL.off=(BAL.gl?23.41:0)+BAL.m;BAL.tOK=BAL.gl&&BAL.m===0;
+    say('aMsg',!BAL.gl?'Taraste con el platillo vacío. Cuando pongas el vidrio de reloj tendrás que tarar otra vez.':BAL.m>0?'Taraste con reactivo encima: ya no sabes cuánto había. Reinicia y tara antes de agregar.':'TARA descontó la masa del vidrio de reloj: la pantalla volvió a 0,00 g. Lo que agregues ahora es solo reactivo.',BAL.tOK?undefined:false)}
+  else if(!BAL.gl)say('aMsg','No pongas el reactivo directamente sobre el platillo: lo ensucia y lo daña. Pon primero el vidrio de reloj.',false);
+  else if(a==='out'){if(BAL.m<=0)say('aMsg','No hay reactivo para retirar.');else{BAL.m=Math.max(0,Math.round((BAL.m-rnd(.05,.15))*100)/100);say('aMsg','Lo que retiras va al recipiente de residuos. Nunca de vuelta al frasco: lo contaminaría.')}}
+  else{BAL.m=Math.round((BAL.m+(a==='big'?rnd(.4,.9):rnd(.01,.03)))*100)/100;
+    say('aMsg',!BAL.tOK?'Sin tarar, la lectura incluye el vidrio de reloj y no sabes cuánto reactivo hay. Reinicia y presiona TARA antes de agregar.':BAL.m>3.02?'Te pasaste de 3,00 g. Retira un poco con la espátula limpia.':BAL.m>2.5?'Ya estás cerca. Ahora agrega dando golpecitos suaves a la espátula.':'Agrega de a poco y espera a que el número se quede quieto.',BAL.tOK&&BAL.m<=3.02?undefined:false)}
+  balDraw()};
+balReset();
+
+/* B · balón aforado */
+const MF={},FP='M76 20V108C76 128 40 140 40 172a26 30 0 0 0 26 30H102a26 30 0 0 0 26-30C128 140 92 128 92 108V20';
+function mfDraw(){const v=Math.min(MF.v,258),yl=v<=225?202-92*Math.pow(v/225,.75):110-62*(v-225)/25,ym=105-(v-250)*12-MF.eye*9;
+  fig('fb',svg(360,226,`<clipPath id="cB"><path d="${FP}"/></clipPath>`+(v>0?`<rect class="lq b" clip-path="url(#cB)" x="30" y="${yl.toFixed(1)}" width="110" height="200"/>`:'')+`<path class="gl" d="${FP}"/><path class="ax" d="M76 48H92"/>`
+   +T(84,222,'Balón de 250 mL')+`<path class="ln" d="M96 48L176 82"/><clipPath id="cBz"><circle cx="256" cy="105" r="78"/></clipPath><circle class="zo" cx="256" cy="105" r="78"/><g clip-path="url(#cBz)">`
+   +(v>0?`<path class="lq b" d="M218 ${(ym-9).toFixed(1)}Q256 ${(ym+9).toFixed(1)} 294 ${(ym-9).toFixed(1)}V200H218Z"/>`:'')+`<path class="gl" d="M218 20V190M294 20V190"/>`
+   +(MF.eye?`<ellipse class="ax" cx="256" cy="105" rx="38" ry="7"/>`:`<path class="ax" style="stroke-width:2.5" d="M218 105H294"/>`)+`</g>`+T(256,206,'Cuello ampliado'),'Balón aforado con su nivel de líquido y vista ampliada del aforo.'));
+  eyeShow('bEye',MF.eye);
+  stepsL('bChk',['Pasar la solución del vaso con embudo','Enjuagar el vaso 2 o 3 veces','Agregar agua hasta cerca del cuello y agitar','Completar gota a gota con los ojos a nivel','Comprobar que el menisco toca el aforo','Tapar e invertir 10 veces'],
+   [MF.p,MF.r>=2,MF.v>=200&&MF.sw,Math.abs(MF.v-250)<=.3&&MF.eye===0,MF.ok,MF.inv>=10])}
+function mfReset(){Object.assign(MF,{v:0,p:false,r:0,eye:1,inv:0,ok:false,sw:false});say('bMsg','El sólido ya está disuelto en el vaso. Empieza pasándolo al balón.');mfDraw()}
+q('#bEye').onclick=e=>{const b=e.target.closest('button');if(b){MF.eye=+b.dataset.e;say('bMsg',MF.eye?'Así el aforo se ve como un óvalo y el menisco parece estar donde no está.':'A nivel el aforo se ve como una sola línea. Así se lee.');mfDraw()}};
+q('#bBtns').onclick=e=>{const b=e.target.closest('button');if(!b)return;const a=b.dataset.a;
+  if(a==='rst')return mfReset();
+  if(a==='pour'){if(MF.p)say('bMsg','Ya pasaste la solución.');else{MF.p=true;MF.v=88;say('bMsg','Vierte despacio por el embudo. En el vaso todavía queda soluto pegado a las paredes.')}}
+  else if(!MF.p)say('bMsg','Primero pasa la solución del vaso. El agua se agrega al final.',false);
+  else if(MF.ok&&a!=='inv')say('bMsg','El aforo ya está comprobado. Solo falta tapar e invertir.');
+  else if(a==='rinse'){if(MF.r>=3)say('bMsg','Con tres enjuagues es suficiente.');else{MF.r++;MF.v+=15;say('bMsg',`Enjuague ${MF.r}: esa agua arrastra el soluto que quedaba en el vaso.`)}}
+  else if(a==='swirl'){MF.sw=true;say('bMsg','Agitar en círculos mezcla la solución antes de llegar al cuello.')}
+  else if(a==='jet'||a==='jet5'){MF.v+=a==='jet'?20:5;say('bMsg',MF.v>250.3?'Te pasaste del aforo con el chorro. Cerca del cuello solo se agrega gota a gota.':MF.v>=244?'Muy cerca del aforo: desde aquí solo gota a gota.':MF.v>=225?'Ya estás en el cuello: usa el chorro corto y termina con gotas.':'Sigue agregando agua destilada.',MF.v>250.3?false:undefined)}
+  else if(a==='drop'){MF.v=Math.round((MF.v+.5)*10)/10;say('bMsg',MF.v<225?'Gota a gota tardarás mucho: lejos del cuello puedes usar el chorro.':'Una gota a la vez. Mira el cuello ampliado.')}
+  else if(a==='chk'){
+    if(MF.eye)say('bMsg','Desde ahí no puedes juzgar. Baja los ojos hasta ver el aforo como una sola línea.',false);
+    else if(MF.v>250.3)say('bMsg','Te pasaste del aforo: hay más de 250 mL y la solución quedó más diluida. No se arregla sacando líquido, porque con él sale soluto. Reinicia.',false);
+    else if(MF.v<249.7)say('bMsg','Falta: la parte baja del menisco todavía no toca la línea.',false);
+    else if(MF.r<2)say('bMsg','El volumen está bien, pero enjuagaste el vaso menos de dos veces: parte del soluto se quedó allá y la solución quedó menos concentrada. Reinicia.',false);
+    else{MF.ok=true;say('bMsg','Aforo correcto: la parte baja del menisco toca la línea. Ahora tapa e invierte.',true)}}
+  else if(a==='inv'){if(!MF.ok)say('bMsg','Primero llega al aforo y compruébalo. Si mezclas antes, ya no podrás corregir el volumen.',false);
+    else{MF.inv=Math.min(10,MF.inv+1);say('bMsg',MF.inv<10?`Inversión ${MF.inv} de 10. Sostén el tapón con el pulgar.`:'Listo: solución homogénea. Pásala a una botella rotulada.',MF.inv>=10?true:undefined)}}
+  mfDraw()};
+mfReset();
+
+/* C · probeta */
+const PB={};
+function pbDraw(){const v=PB.v,va=v+(v>0?PB.eye*1.5:0);let s=V(60,20,40,170,v/100*.92,'lq w')+`<path class="gl" d="M44 190H116"/>`;
+  for(let k=1;k<=10;k++)s+=`<path class="ax" d="M${k%5?90:84} ${(190-15.64*k).toFixed(1)}H100"/>`;
+  s+=T(52,116,'50','end')+T(52,38,'100','end')+T(80,212,'Probeta de 100 mL')+`<clipPath id="cC"><rect x="190" y="24" width="140" height="164" rx="12"/></clipPath><rect class="zo" x="190" y="24" width="140" height="164" rx="12"/><g clip-path="url(#cC)">`
+   +(v>0?`<path class="lq w" d="M215 96Q255 114 295 96V190H215Z"/>`:'')+`<path class="gl" d="M215 20V190M295 20V190"/>`;
+  for(let mk=Math.max(0,Math.floor(va-9));mk<=Math.min(100,Math.ceil(va+9));mk++){const y=105-(mk-va)*10;s+=`<path class="ax" d="M${mk%5?283:271} ${y.toFixed(1)}H295"/>`+(mk%5===0?T(264,y+4,mk,'end'):'')}
+  fig('fc',svg(360,216,s+`</g>`+T(260,206,'Escala ampliada'),'Probeta con su nivel de líquido y vista ampliada de la escala.'));
+  eyeShow('cEye',PB.eye);qa('#cInst button').forEach(b=>b.classList.toggle('on',PB.inst&&b.dataset.i==='p100'));
+  stepsL('cChk',['Elegir el instrumento adecuado','Verter cerca del volumen pedido','Ajustar con gotero','Leer el menisco con los ojos a nivel'],[PB.inst,PB.inst&&v>PB.t-6,PB.inst&&Math.abs(v-PB.t)<=.5,PB.ok])}
+function pbReset(){Object.assign(PB,{v:0,eye:1,t:pickR([35,48,64,72]),inst:false,ok:false});q('#cGoal').textContent=PB.t+' mL';say('cMsg','¿Con qué instrumento lo mides?');pbDraw()}
+q('#cInst').onclick=e=>{const b=e.target.closest('button');if(!b)return;const i=b.dataset.i;PB.inst=i==='p100';
+  say('cMsg',i==='vaso'?'Las marcas del vaso son aproximadas: puedes equivocarte por varios mililitros.':i==='p25'?'No cabe: tendrías que medir varias veces y en cada una se suma error.':'Bien: cabe todo de una vez y cada rayita vale 1 mL. Ponla sobre la mesa y empieza a verter.',PB.inst?true:false);pbDraw()};
+q('#cEye').onclick=e=>{const b=e.target.closest('button');if(b){PB.eye=+b.dataset.e;say('cMsg',PB.eye>0?'Desde arriba el menisco parece estar más alto: lees de más.':PB.eye<0?'Desde abajo el menisco parece estar más bajo: lees de menos.':'A nivel lees el valor real.');pbDraw()}};
+q('#cBtns').onclick=e=>{const b=e.target.closest('button');if(!b)return;const a=b.dataset.a;
+  if(a==='rst')return pbReset();
+  if(!PB.inst)say('cMsg','Primero elige el instrumento adecuado.',false);
+  else if(a==='chk'){PB.ok=false;
+    if(PB.eye)say('cMsg','Así no puedes leer bien. Baja o sube hasta que tus ojos queden a la altura del menisco.',false);
+    else if(Math.abs(PB.v-PB.t)<=.5){PB.ok=true;say('cMsg',`Correcto: hay ${g1(PB.v)} mL. La parte baja del menisco está en la marca.`,true)}
+    else say('cMsg',`Hay ${g1(PB.v)} mL y necesitas ${PB.t} mL. ${PB.v>PB.t?'Retira con el gotero.':'Agrega un poco más.'}`,false)}
+  else{PB.ok=false;PB.v=Math.max(0,Math.min(100,Math.round((PB.v+({p5:5,p1:1,d:.2,m:-.5})[a])*10)/10));say('cMsg',PB.v>PB.t+.5?'Mira la escala: parece que te pasaste.':PB.v>PB.t-3?'Estás cerca: termina con el gotero.':'Sigue vertiendo despacio por la pared.')}
+  pbDraw()};
+pbReset();
+
+/* D · pipeta graduada */
+const PP={},TP='M96 34V198L100 216L104 198V34';
+function ppDraw(){const L=PP.L,y=l=>52+14*l;
+  let s=(PP.ph===1?V(74,198,52,40,Math.min(.8,.2+.08*Math.max(0,L)),'lq b'):PP.tip?V(70,152,60,72,.6,'lq b'):V(14,180,52,52,.6,'lq b'))
+   +`<clipPath id="cD"><path d="${TP}Z"/></clipPath>`+(L<10.6?`<rect class="lq b" style="fill-opacity:.85" clip-path="url(#cD)" x="90" y="${y(L).toFixed(1)}" width="20" height="200"/>`:'')+`<path class="gl" style="stroke-width:2" d="${TP}"/>`
+   +(PP.bulb?`<ellipse class="pt o" cx="100" cy="20" rx="13" ry="14"/>`:'');
+  for(let k=0;k<=10;k++)s+=`<path class="ax" d="M88 ${y(k)}H96"/>`+T(84,y(k)+4,k,'end');
+  s+=`<clipPath id="cDz"><circle cx="262" cy="118" r="78"/></clipPath><circle class="zo" cx="262" cy="118" r="78"/><g clip-path="url(#cDz)">`+(L<10.6?`<path class="lq b" style="fill-opacity:.85" d="M240 112Q262 124 284 112V210H240Z"/>`:'')+`<path class="gl" d="M240 30V206M284 30V206"/>`;
+  for(let i=Math.max(0,Math.ceil((L-2.2)*10));i<=Math.min(100,Math.floor((L+2.2)*10));i++){const yy=118+(i/10-L)*34;s+=`<path class="ax" d="M240 ${yy.toFixed(1)}H${i%10===0?262:i%5===0?254:248}"/>`+(i%10===0?T(232,yy+4,i/10,'end'):'')}
+  if(PP.air)s+=`<circle class="zo" cx="256" cy="140" r="5"/><circle class="zo" cx="268" cy="158" r="4"/><circle class="zo" cx="260" cy="176" r="6"/>`;
+  fig('fd',svg(360,240,s+`</g>`+T(262,214,'Escala ampliada'),'Pipeta graduada con su escala y vista ampliada del menisco.'),PP.ph===1?'Entregando en el recipiente.':PP.tip?'Punta sumergida en la solución.':'Punta fuera del líquido.');
+  stepsL('dChk',['Colocar el pipeteador','Sumergir la punta sin tocar el fondo','Aspirar hasta pasar por encima del 0','Sacar la punta y ajustar el menisco a 0,00','Entregar hasta la marca 6,00'],[PP.bulb,PP.ph===1||(PP.tip&&PP.bulb),PP.ph===1||(L<0&&!PP.air),PP.ph===1,PP.done])}
+function ppReset(){Object.assign(PP,{bulb:false,tip:false,L:10.6,ph:0,air:false,done:false});say('dMsg','La pipeta está vacía. ¿Qué necesitas antes de aspirar?');ppDraw()}
+q('#dBtns').onclick=e=>{const b=e.target.closest('button');if(!b)return;const a=b.dataset.a,L=PP.L;
+  if(a==='rst')return ppReset();
+  if(a==='bulb'){PP.bulb=true;say('dMsg','Pipeteador colocado. Ajústalo con suavidad: no fuerces la pipeta, que es de vidrio.')}
+  else if(a==='emp'){PP.L=10.6;PP.air=false;PP.ph=0;PP.done=false;say('dMsg','Pipeta vacía. Lo que sale va al recipiente de residuos, no al frasco.')}
+  else if(a==='tip'){if(PP.ph===1)say('dMsg','Ya estás entregando: no vuelvas a meter la pipeta en el frasco.',false);else{PP.tip=!PP.tip;say('dMsg',PP.tip?'Punta sumergida, sin tocar el fondo.':'Punta fuera del líquido. Así se ajusta el menisco al 0.')}}
+  else if(a==='up'){
+    if(!PP.bulb)say('dMsg','Nunca aspires con la boca. Coloca primero el pipeteador.',false);
+    else if(PP.ph===1)say('dMsg','Ya fijaste la lectura inicial: ahora solo se entrega.',false);
+    else if(!PP.tip){PP.air=true;say('dMsg','La punta está fuera del líquido: aspiraste aire y entraron burbujas. Vacía la pipeta y repite con la punta sumergida.',false)}
+    else{PP.L=Math.max(-.8,Math.round((L-2.2)*100)/100);say('dMsg',PP.L<=-.8?'No subas más: el líquido puede entrar al pipeteador. Saca la punta y baja hasta 0,00.':PP.L<0?'Pasaste por encima del 0: bien. Ahora saca la punta y baja gota a gota hasta 0,00.':'Sigue aspirando hasta pasar un poco por encima del 0.')}}
+  else if(a==='dn'||a==='dr'){if(L>=10.6)say('dMsg','La pipeta está vacía.');else{PP.L=Math.min(10.6,Math.round((L+(a==='dn'?.5:.05))*100)/100);
+    say('dMsg',PP.ph===1?(PP.L>6.05?'Mira la escala: parece que te pasaste de 6,00.':PP.L>5.4?'Estás cerca de 6,00: termina gota a gota.':'La lectura crece hacia abajo. Sigue soltando.'):(PP.L>.05?'El menisco ya bajó del 0. Aspira otra vez.':'Mira la escala ampliada: el menisco debe tocar el 0.'))}}
+  else if(a==='set'){
+    if(PP.air)say('dMsg','Hay burbujas de aire: la medida no sirve. Vacía la pipeta y vuelve a aspirar.',false);
+    else if(PP.tip)say('dMsg','Saca la punta del líquido antes de ajustar al 0.',false);
+    else if(Math.abs(L)>.03)say('dMsg',L>=10.6?'La pipeta está vacía.':L<0?`El menisco está por encima del 0. Baja gota a gota.`:`El menisco está en ${g2(L)} mL. Debe quedar en 0,00: aspira de nuevo.`,false);
+    else{PP.ph=1;PP.L=0;say('dMsg','Lectura inicial: 0,00 mL. Limpia la punta por fuera con papel y entrega con la punta apoyada en la pared del recipiente.',true)}}
+  else if(a==='chk'){
+    if(PP.ph!==1)say('dMsg','Primero ajusta el menisco a 0,00 y fija la lectura inicial.',false);
+    else if(Math.abs(L-6)<=.03){PP.done=true;say('dMsg','Entregaste 6,00 mL: lectura final 6,00 menos lectura inicial 0,00. Lo que queda en la pipeta no se sopla ni se devuelve al frasco.',true)}
+    else if(L<6)say('dMsg',`La lectura va en ${g2(L)}: has entregado ${g2(L)} mL. Te faltan ${g2(6-L)} mL.`,false);
+    else say('dMsg',`Te pasaste: entregaste ${g2(L)} mL. No se puede devolver. Reinicia.`,false)}
+  ppDraw()};
+ppReset();
+
+/* E · reactivos sólidos */
+fig('fe',svg(360,200,`<rect class="zo" x="14" y="10" width="332" height="180" rx="12"/>`+T(30,40,'Sulfato de cobre (II) pentahidratado','start')+T(30,60,'CuSO₄·5H₂O','start','m')
+  +`<path d="M70 82L106 118L70 154L34 118Z" fill="#fff" stroke="#d6281f" stroke-width="5"/><path d="M70 98V122" stroke="#111" stroke-width="7" fill="none"/><circle cx="70" cy="135" r="4.5" fill="#111"/>`
+  +`<path d="M152 82L188 118L152 154L116 118Z" fill="#fff" stroke="#d6281f" stroke-width="5"/><ellipse cx="160" cy="130" rx="12" ry="5" fill="#111"/><path d="M148 130L139 124V136Z" fill="#111"/><path d="M142 118V98M142 108L134 100M142 104L150 96" stroke="#111" stroke-width="3" fill="none"/>`
+  +T(204,100,'Atención','start')+T(204,122,'Nocivo si se ingiere','start','m')+T(204,142,'Irrita piel y ojos','start','m')+T(204,162,'Daña la vida acuática','start','m'),
+  'Etiqueta del sulfato de cobre pentahidratado con sus pictogramas de peligro.'),'Etiqueta simplificada: nombre, fórmula, pictogramas y advertencias.');
+const SC=[
+{q:'Vas a usar un frasco con un sólido azul. ¿Qué haces antes de abrirlo?',o:['Lo abro y lo huelo para saber qué es','Leo el nombre, la fórmula y los pictogramas','Le pregunto a un compañero qué contiene'],a:1,x:'La etiqueta es la única fuente segura. Oler un reactivo de cerca puede irritar o intoxicar, y un compañero puede equivocarse.'},
+{q:'El reactivo es sólido y no salpica. ¿Qué protección usas?',o:['Bata, gafas y guantes, como siempre','Solo guantes, porque no es líquido','Ninguna, porque es poca cantidad'],a:0,x:'El polvo fino puede llegar a los ojos o a la piel sin que lo notes. La protección es la misma para sólidos y líquidos.'},
+{q:'Destapas el frasco. ¿Dónde dejas la tapa?',o:['Boca abajo sobre la mesa','En la mano, mientras saco el reactivo','Boca arriba sobre la mesa limpia'],a:2,x:'Boca abajo recoge suciedad de la mesa y la lleva al frasco. Boca arriba, la parte interna no toca nada.'},
+{q:'¿Cómo sacas el reactivo del frasco?',o:['Con una espátula limpia y seca','Con los dedos, porque tengo guantes','Volteando el frasco sobre la balanza'],a:0,x:'La espátula limpia y seca no contamina el frasco. Voltear el frasco deja caer de más y riega reactivo sobre la balanza.'},
+{q:'Sacaste más reactivo del que necesitabas. ¿Qué haces con lo que sobra?',o:['Lo devuelvo al frasco para no desperdiciar','Lo boto por el lavadero con agua','Lo llevo al recipiente de residuos'],a:2,x:'Lo que salió del frasco ya pudo contaminarse: si vuelve, daña todo el reactivo. Y el cobre no va al desagüe.'},
+{q:'Terminaste con el sulfato de cobre y ahora necesitas sacar sal. Solo tienes una espátula.',o:['La uso igual: son muy poquitos granos','La lavo y la seco antes de usarla','La sacudo contra el borde del frasco'],a:1,x:'Unos pocos granos bastan para contaminar el otro frasco. Además debe quedar seca: una espátula mojada humedece el reactivo.'},
+{q:'Se regaron unos granos de reactivo sobre la balanza y la mesa.',o:['Aviso, los recojo con papel y van a residuos','Los soplo para que no se vean','Los dejo: los limpia el siguiente grupo'],a:0,x:'Soplar manda el polvo a tus ojos y a los de tus compañeros. Lo que se deja lo toca otro sin saber qué es.'},
+{q:'Terminó la práctica. ¿Qué haces antes de salir?',o:['Boto todo por el lavadero y enjuago','Dejo el frasco abierto para la otra clase','Tapo el frasco, llevo residuos y me lavo las manos'],a:2,x:'El frasco se cierra para que el reactivo no absorba humedad. Los residuos de cobre van al recipiente rotulado.'}];
+let si=0;
+function scShow(){const k=SC[si];q('#eN').textContent=`Situación ${si+1} de ${SC.length}`;q('#eQ').textContent=k.q;
+  q('#eOpts').innerHTML=k.o.map((o,j)=>`<button data-j="${j}"><b>${'ABC'[j]}.</b><span>${o}</span></button>`).join('');q('#eFb').hidden=true;q('#eNext').hidden=true}
+q('#eOpts').onclick=e=>{const b=e.target.closest('button');if(!b||b.disabled)return;const k=SC[si],j=+b.dataset.j,ok=j===k.a;
+  qa('#eOpts button').forEach((x,i)=>{x.disabled=true;if(i===k.a)x.classList.add('ok');else if(i===j)x.classList.add('bad')});
+  const fb=q('#eFb');fb.hidden=false;fb.innerHTML=`<b class="${ok?'ok':'bad'}">${ok?'✓ Correcto.':'✗ Lo correcto es la '+'ABC'[k.a]+'.'}</b> ${k.x}`;
+  q('#eNext').hidden=false;q('#eNext').textContent=si<SC.length-1?'Siguiente situación':'Volver a empezar'};
+q('#eNext').onclick=()=>{si=(si+1)%SC.length;scShow()};scShow();
+
+/* F · cálculos */
+const CX={},ap=(a,b)=>Math.abs(a-b)<=Math.max(.011,Math.abs(b)*.01);
+function dline(a1,b1,b2,ua,ub){const mx=Math.max(b1,b2),px=v=>40+270*v/mx,x1=px(b1),x2=px(b2);
+  return svg(360,170,`<path class="ax" d="M40 62H320M40 112H320"/><path class="ln" d="M${x1} 62V112M${x2} 62V112"/>`+[x1,x2].map(x=>`<circle class="dot" cx="${x}" cy="62" r="5"/><circle class="dot" cx="${x}" cy="112" r="5"/>`).join('')
+   +T(x1,46,b1+' '+ub)+T(x2,46,b2+' '+ub)+T(x1,138,a1+' '+ua)+T(x2,138,'¿? '+ua)+T(40,22,'Solución','start','m')+T(40,162,'Soluto','start','m'),'Doble recta que relaciona la cantidad de soluto con el volumen de solución.')}
+function cxNew(t){CX.t=t||CX.t||'pv';CX.h=0;let f;
+  if(CX.t==='pv'){const s=pickR(['cloruro de sodio','azúcar','cloruro de potasio']),C=pickR([1,3,4,5,10]),Vv=pickR([50,250,500]);CX.ans=C*Vv/100;CX.u='g';
+    CX.q=`Debes preparar ${Vv} mL de solución de ${s} al ${C} % p/V. ¿Cuántos gramos de soluto pesas?`;
+    CX.hs=[`${C} % p/V significa ${C} g de soluto en cada 100 mL de solución.`,`${Vv} mL son ${n2(Vv/100)} veces 100 mL.`,`${C} g × ${n2(Vv/100)} = ${n2(CX.ans)} g.`];
+    CX.after=`Se pesa en la balanza, sobre vidrio de reloj, y se completa en un balón aforado de ${Vv} mL.`;CX.bad=v=>ap(v,C)?`Esos ${C} g son para 100 mL. Tú preparas ${Vv} mL.`:'';f=dline(n2(C),100,Vv,'g','mL')}
+  else if(CX.t==='mol'){const s=pickR([['NaCl',58.44],['NaOH',40],['KCl',74.55],['glucosa',180.16]]),M=pickR([.1,.2,.5,1]),Vv=pickR([100,250,500]),mol=M*Vv/1000;CX.ans=mol*s[1];CX.u='g';
+    CX.q=`Debes preparar ${Vv} mL de solución de ${s[0]} ${n2(M)} M. La masa molar es ${n2(s[1])} g/mol. ¿Cuántos gramos de soluto pesas?`;
+    CX.hs=[`${n2(M)} M significa ${n2(M)} mol de soluto en cada litro (1000 mL) de solución.`,`${Vv} mL son ${n3(Vv/1000)} L. Ahí hay ${n2(M)} × ${n3(Vv/1000)} = ${n3(mol)} mol.`,`${n3(mol)} mol × ${n2(s[1])} g/mol = ${n2(CX.ans)} g.`];
+    CX.after=`Se pesa en la balanza, sobre vidrio de reloj, y se completa en un balón aforado de ${Vv} mL.`;
+    CX.bad=v=>ap(v,mol)?'Esos son los moles. Falta pasarlos a gramos con la masa molar.':ap(v,M*s[1])?`Eso es para 1 L. Tú preparas ${Vv} mL.`:'';f=dline(n2(M),1000,Vv,'mol','mL')}
+  else{const c=pickR([[10,2],[10,1],[5,1],[20,5],[10,2.5],[4,1]]),V2=pickR([100,250,500]),k=c[0]/c[1];CX.ans=V2/k;CX.u='mL';
+    CX.q=`Tienes una solución al ${n2(c[0])} % p/V y necesitas ${V2} mL al ${n2(c[1])} % p/V. ¿Cuántos mL de la solución concentrada mides?`;
+    CX.hs=[`La solución final debe quedar ${n2(k)} veces menos concentrada que la inicial.`,`Entonces la porción concentrada es el volumen final dividido entre ${n2(k)}.`,`${V2} mL ÷ ${n2(k)} = ${n2(CX.ans)} mL. Es lo mismo que C₁·V₁ = C₂·V₂.`];
+    CX.after=`Se mide con ${CX.ans<=10?'pipeta graduada':'probeta'} y se completa con agua hasta ${V2} mL en el balón aforado.`;CX.bad=v=>ap(v,V2)?'Ese es el volumen final. Te piden la porción de solución concentrada.':ap(v,V2-CX.ans)?'Ese es el volumen de agua. Te piden el de solución concentrada.':'';
+    f=svg(360,204,V(60,30,50,130,.3,'lq b',.75)+`<path class="ax" d="M126 95H206M196 87L206 95L196 103"/>`+T(166,83,'+ agua')+V(225,30,100,130,.85,'lq b',.3)+T(85,180,n2(c[0])+' %')+T(85,198,'¿? mL')+T(275,180,n2(c[1])+' %')+T(275,198,V2+' mL'),'Ilustración: una porción concentrada que se completa con agua.')}
+  fig('ff',f);q('#fQ').textContent=CX.q;q('#fU').textContent=CX.u;q('#fIn').value='';q('#fHints').innerHTML='';say('fMsg','');
+  qa('#fType button').forEach(b=>b.classList.toggle('on',b.dataset.t===CX.t))}
+q('#fType').onclick=e=>{const b=e.target.closest('button');if(b)cxNew(b.dataset.t)};
+q('#fNew').onclick=()=>cxNew();
+q('#fHint').onclick=()=>{if(CX.h<3){const li=document.createElement('li');li.textContent=CX.hs[CX.h++];q('#fHints').appendChild(li)}else say('fMsg','Ya viste todas las pistas.')};
+q('#fChk').onclick=()=>{const v=parseFloat(q('#fIn').value.replace(',','.'));
+  if(isNaN(v))say('fMsg','Escribe un número. Puedes usar coma decimal.',false);
+  else if(ap(v,CX.ans))say('fMsg',`Correcto: ${n2(CX.ans)} ${CX.u}. ${CX.after}`,true);
+  else say('fMsg',CX.bad(v)||'Todavía no. Revisa las unidades o pide una pista.',false)};
+cxNew('pv');
+
 /* visitas y sugerencias: solo en la versión publicada en GitHub */
 const LIVE=/github\.io$/.test(location.hostname);
 if(LIVE){let seen=false;try{seen=sessionStorage.getItem('v')==='1';sessionStorage.setItem('v','1')}catch(e){}
@@ -1011,13 +1403,13 @@ sf.addEventListener('submit',e=>{const tot=[...q('#simg').files].reduce((a,f)=>a
   else if(tot>5*1048576){e.preventDefault();q('#snote').textContent='Las imágenes superan 5 MB en total. Reduce su tamaño o envía menos.'}});
 
 /* secciones */
-const HASH={lab:'laboratorio',con:'conceptos',pro:'profundizacion'};
-function mode(m,setHash){q('#lab').hidden=m!=='lab';q('#con').hidden=m!=='con';q('#pro').hidden=m!=='pro';
+const HASH={lab:'laboratorio',pri:'principiantes',con:'conceptos',pro:'profundizacion'};
+function mode(m,setHash){Object.keys(HASH).forEach(k=>q('#'+k).hidden=m!==k);
   qa('#mode button').forEach(b=>b.setAttribute('aria-current',String(b.dataset.m===m)));
   if(m!=='lab'&&q('#play').getAttribute('aria-label')==='Pausar')q('#play').click();
   if(setHash)try{location.hash=HASH[m]}catch(e){}}
 q('#mode').onclick=e=>{const b=e.target.closest('button');if(b)mode(b.dataset.m,true)};
-const fromHash=()=>{mode(location.hash==='#conceptos'?'con':location.hash==='#profundizacion'?'pro':'lab',false);
+const fromHash=()=>{mode(Object.keys(HASH).find(k=>'#'+HASH[k]===location.hash)||'lab',false);
   if(location.hash==='#gracias'){q('#thanks').hidden=false;q('#thanks').scrollIntoView({block:'center'})}};
 window.addEventListener('hashchange',fromHash);fromHash();
 })();
